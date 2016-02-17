@@ -129,11 +129,40 @@ resource_config = {
         'RESOURCE': 'xsede.stampede',
         #'SCHEMA': 'local',
         #'TASK_LAUNCH_METHOD': "ORTE",
-        'AGENT_SPAWNER': 'POPEN',
-        'TARGET': 'node',
+        #'AGENT_SPAWNER': 'POPEN',
+        'TARGET': 'local',
         'QUEUE': 'development',
-        #'PROJECT': 'TG-MCB090174', # RADICAL
-        'PROJECT': 'TG-MCB150124', # CECAM
+        'PROJECT': 'TG-MCB090174', # RADICAL
+        'PPN': 16,
+        'PRE_EXEC_PREPEND': [
+            #'module use --append /u/sciteam/marksant/privatemodules',
+            #'module load use.own',
+            #'module load openmpi/git'
+        ]
+    },
+    'STAMPEDE_ORTE': {
+        'RESOURCE': 'xsede.stampede_orte',
+        #'SCHEMA': 'local',
+        #'TASK_LAUNCH_METHOD': "ORTE",
+        #'AGENT_SPAWNER': 'POPEN',
+        'TARGET': 'local',
+        'QUEUE': 'development',
+        'PROJECT': 'TG-MCB090174', # RADICAL
+        'PPN': 16,
+        'PRE_EXEC_PREPEND': [
+            #'module use --append /u/sciteam/marksant/privatemodules',
+            #'module load use.own',
+            #'module load openmpi/git'
+        ]
+    },
+    'STAMPEDE_ORTELIB': {
+        'RESOURCE': 'xsede.stampede_ortelib',
+        #'SCHEMA': 'local',
+        #'TASK_LAUNCH_METHOD': "ORTE",
+        #'AGENT_SPAWNER': 'POPEN',
+        'TARGET': 'local',
+        'QUEUE': 'development',
+        'PROJECT': 'TG-MCB090174', # RADICAL
         'PPN': 16,
         'PRE_EXEC_PREPEND': [
             #'module use --append /u/sciteam/marksant/privatemodules',
