@@ -218,7 +218,7 @@ def preprocess_all(session_ids):
 
     pool = Pool()
 
-    pool.map(preprocess, session_ids)
+    pool.map(preprocess, session_ids, chunksize=1)
 
 
 
