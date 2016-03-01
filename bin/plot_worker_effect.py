@@ -127,61 +127,117 @@ if __name__ == '__main__':
 
     session_ids = {
 
+        # # BW
+        # "1,1 (1)": [
+        #     "rp.session.radical.marksant.016856.0027", # -  {'pilot_cores': 1056, , 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 1024,  'num_sub_agents': 1,
+        #     "rp.session.radical.marksant.016856.0045", # -  {'pilot_cores': 4128, , 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 4096,  'num_sub_agents': 1,
+        #     "rp.session.radical.marksant.016856.0036", # -  {'pilot_cores': 2080, , 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 2048,  'num_sub_agents': 1,
+        #     "rp.session.radical.marksant.016856.0049", # -  {'pilot_cores': 8224, , 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 8192,  'num_sub_agents': 1,
+        # ],
+        # "1,2 (2)": [
+        #     "rp.session.radical.marksant.016856.0025", # -  {'pilot_cores': 1056, , 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 1024,  'num_sub_agents': 1,
+        #     "rp.session.radical.marksant.016856.0034", # -  {'pilot_cores': 2080, , 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 2048,  'num_sub_agents': 1,
+        #     "rp.session.radical.marksant.016856.0043", # -  {'pilot_cores': 4128, , 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 4096,  'num_sub_agents': 1,
+        #     "rp.session.radical.marksant.016856.0051", # -  {'pilot_cores': 8224, , 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 8192,  'num_sub_agents': 1,
+        # ],
+        # "1,4 (4)": [
+        #     "rp.session.radical.marksant.016856.0026", # -  {'pilot_cores': 1056, , 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 1024,  'num_sub_agents': 1,
+        #     # "rp.session.radical.marksant.016856.0035", # -  {'pilot_cores': 2080, , 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 2048,  'num_sub_agents': 1,
+        #     "rp.session.radical.marksant.016856.0044", # -  {'pilot_cores': 4128, , 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 4096,  'num_sub_agents': 1,
+        #     "rp.session.radical.marksant.016856.0050", # -  {'pilot_cores': 8224, , 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 8192,  'num_sub_agents': 1,
+        # ],
+        # "2,1 (2)": [
+        #     # "rp.session.radical.marksant.016856.0024", # -  {'pilot_cores': 1088, , 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 1024,  'num_sub_agents': 2,
+        #     "rp.session.radical.marksant.016856.0033", # -  {'pilot_cores': 2112, , 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 2048,  'num_sub_agents': 2,
+        #     "rp.session.radical.marksant.016856.0046", # -  {'pilot_cores': 8256, , 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 8192,  'num_sub_agents': 2,
+        #     "rp.session.radical.marksant.016856.0042", # -  {'pilot_cores': 4160, , 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 4096,  'num_sub_agents': 2,
+        # ],
+        # "2,2 (4)": [
+        #     "rp.session.radical.marksant.016856.0022", # -  {'pilot_cores': 1088, , 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 1024,  'num_sub_agents': 2, ,
+        #     "rp.session.radical.marksant.016856.0031", # -  {'pilot_cores': 2112, , 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 2048,  'num_sub_agents': 2,
+        #     "rp.session.radical.marksant.016856.0048", # -  {'pilot_cores': 8256, , 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 8192,  'num_sub_agents': 2,
+        #     "rp.session.radical.marksant.016856.0040", # -  {'pilot_cores': 4160, , 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 4096,  'num_sub_agents': 2,
+        # ],
+        # "2,4 (8)": [
+        #     "rp.session.radical.marksant.016856.0023", #-  {'pilot_cores': 1088, , 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 1024,  'num_sub_agents': 2,
+        #     "rp.session.radical.marksant.016856.0032", # -  {'pilot_cores': 2112, , 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 2048,  'num_sub_agents': 2,
+        #     "rp.session.radical.marksant.016856.0041", # -  {'pilot_cores': 4160, , 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 4096,  'num_sub_agents': 2,
+        #     "rp.session.radical.marksant.016856.0047", # -  {'pilot_cores': 8256, , 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 8192,  'num_sub_agents': 2,
+        # ],
+        # "4,1 (4)": [
+        #     "rp.session.radical.marksant.016856.0021", #-  {'pilot_cores': 1152, , 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 1024,  'num_sub_agents': 4,
+        #     # "rp.session.radical.marksant.016856.0030", # -  {'pilot_cores': 2176, , 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 2048,  'num_sub_agents': 4,
+        #     "rp.session.radical.marksant.016856.0039", # -  {'pilot_cores': 4224, , 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 4096,  'num_sub_agents': 4,
+        #     # "rp.session.radical.marksant.016856.0052", # -  {'pilot_cores': 8320, , 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 8192,  'num_sub_agents': 4,
+        # ],
+        # "4,2 (8)": [
+        #     "rp.session.radical.marksant.016856.0019", # -  {'pilot_cores': 1152, , 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 1024,  'num_sub_agents': 4,
+        #     "rp.session.radical.marksant.016856.0028", # -  {'pilot_cores': 2176, , 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 2048,  'num_sub_agents': 4,
+        #     "rp.session.radical.marksant.016856.0037", # -  {'pilot_cores': 4224, , 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 4096,  'num_sub_agents': 4,
+        #     "rp.session.radical.marksant.016856.0054", # -  {'pilot_cores': 8320, , 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 8192,  'num_sub_agents': 4,
+        # ],
+        # "4,4 (16)": [
+        #     "rp.session.radical.marksant.016856.0020", #-  {'pilot_cores': 1152, , 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 1024,  'num_sub_agents': 4,
+        #     "rp.session.radical.marksant.016856.0029", # -  {'pilot_cores': 2176, , 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 2048,  'num_sub_agents': 4,
+        #     "rp.session.radical.marksant.016856.0038", # -  {'pilot_cores': 4224, , 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 4096,  'num_sub_agents': 4,
+        #     # "rp.session.radical.marksant.016856.0053", #-  {'pilot_cores': 8320, , 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 8192,  'num_sub_agents': 4,
+        # ],
+
+        # # Stampede
         "1,1 (1)": [
-            "rp.session.radical.marksant.016856.0027", # -  {'pilot_cores': 1056, , 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 1024,  'num_sub_agents': 1,
-            "rp.session.radical.marksant.016856.0045", # -  {'pilot_cores': 4128, , 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 4096,  'num_sub_agents': 1,
-            "rp.session.radical.marksant.016856.0036", # -  {'pilot_cores': 2080, , 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 2048,  'num_sub_agents': 1,
-            "rp.session.radical.marksant.016856.0049", # -  {'pilot_cores': 8224, , 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 8192,  'num_sub_agents': 1,
+            "rp.session.radical.marksant.016860.0007", #  'num_exec_instances_per_sub_agent': 1, 'effective_cores': 512, 'num_sub_agents': 1,
+            "rp.session.radical.marksant.016860.0016", # 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 4032, 'num_sub_agents': 1
+            "rp.session.radical.marksant.016860.0025", # 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 1024, 'num_sub_agents': 1
+            "rp.session.radical.marksant.016860.0034", # 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 2048, 'num_sub_agents': 1
         ],
         "1,2 (2)": [
-            "rp.session.radical.marksant.016856.0025", # -  {'pilot_cores': 1056, , 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 1024,  'num_sub_agents': 1,
-            "rp.session.radical.marksant.016856.0034", # -  {'pilot_cores': 2080, , 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 2048,  'num_sub_agents': 1,
-            "rp.session.radical.marksant.016856.0043", # -  {'pilot_cores': 4128, , 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 4096,  'num_sub_agents': 1,
-            "rp.session.radical.marksant.016856.0051", # -  {'pilot_cores': 8224, , 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 8192,  'num_sub_agents': 1,
+            "rp.session.radical.marksant.016860.0005", #  'num_exec_instances_per_sub_agent': 2, 'effective_cores': 512, 'num_sub_agents': 1,
+            "rp.session.radical.marksant.016860.0014", # 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 4032, 'num_sub_agents': 1
+            "rp.session.radical.marksant.016860.0023", # 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 1024, 'num_sub_agents': 1
+            "rp.session.radical.marksant.016860.0032", # 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 2048, 'num_sub_agents': 1
         ],
         "1,4 (4)": [
-            "rp.session.radical.marksant.016856.0026", # -  {'pilot_cores': 1056, , 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 1024,  'num_sub_agents': 1,
-            # "rp.session.radical.marksant.016856.0035", # -  {'pilot_cores': 2080, , 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 2048,  'num_sub_agents': 1,
-            "rp.session.radical.marksant.016856.0044", # -  {'pilot_cores': 4128, , 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 4096,  'num_sub_agents': 1,
-            "rp.session.radical.marksant.016856.0050", # -  {'pilot_cores': 8224, , 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 8192,  'num_sub_agents': 1,
+            "rp.session.radical.marksant.016860.0006", #  'num_exec_instances_per_sub_agent': 4, 'effective_cores': 512, 'num_sub_agents': 1,
+            "rp.session.radical.marksant.016860.0015", # 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 4032, 'num_sub_agents': 1
+            "rp.session.radical.marksant.016860.0024", # 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 1024, 'num_sub_agents': 1
+            "rp.session.radical.marksant.016860.0033", # 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 2048, 'num_sub_agents': 1
         ],
         "2,1 (2)": [
-            # "rp.session.radical.marksant.016856.0024", # -  {'pilot_cores': 1088, , 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 1024,  'num_sub_agents': 2,
-            "rp.session.radical.marksant.016856.0033", # -  {'pilot_cores': 2112, , 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 2048,  'num_sub_agents': 2,
-            "rp.session.radical.marksant.016856.0046", # -  {'pilot_cores': 8256, , 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 8192,  'num_sub_agents': 2,
-            "rp.session.radical.marksant.016856.0042", # -  {'pilot_cores': 4160, , 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 4096,  'num_sub_agents': 2,
+            "rp.session.radical.marksant.016860.0010", #  'num_exec_instances_per_sub_agent': 1, 'effective_cores': 512, 'num_sub_agents': 2,
+            "rp.session.radical.marksant.016860.0019", # 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 4032, 'num_sub_agents': 2
+            "rp.session.radical.marksant.016860.0028", # 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 1024, 'num_sub_agents': 2
+            "rp.session.radical.marksant.016860.0037", # 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 2048, 'num_sub_agents': 2
         ],
         "2,2 (4)": [
-            "rp.session.radical.marksant.016856.0022", # -  {'pilot_cores': 1088, , 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 1024,  'num_sub_agents': 2, ,
-            "rp.session.radical.marksant.016856.0031", # -  {'pilot_cores': 2112, , 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 2048,  'num_sub_agents': 2,
-            "rp.session.radical.marksant.016856.0048", # -  {'pilot_cores': 8256, , 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 8192,  'num_sub_agents': 2,
-            "rp.session.radical.marksant.016856.0040", # -  {'pilot_cores': 4160, , 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 4096,  'num_sub_agents': 2,
+            "rp.session.radical.marksant.016860.0008", #  'num_exec_instances_per_sub_agent': 2, 'effective_cores': 512, 'num_sub_agents': 2,
+            "rp.session.radical.marksant.016860.0017", # 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 4032, 'num_sub_agents': 2
+            "rp.session.radical.marksant.016860.0026", # 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 1024, 'num_sub_agents': 2
+            "rp.session.radical.marksant.016860.0035", # 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 2048, 'num_sub_agents': 2
         ],
         "2,4 (8)": [
-            "rp.session.radical.marksant.016856.0023", #-  {'pilot_cores': 1088, , 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 1024,  'num_sub_agents': 2,
-            "rp.session.radical.marksant.016856.0032", # -  {'pilot_cores': 2112, , 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 2048,  'num_sub_agents': 2,
-            "rp.session.radical.marksant.016856.0041", # -  {'pilot_cores': 4160, , 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 4096,  'num_sub_agents': 2,
-            "rp.session.radical.marksant.016856.0047", # -  {'pilot_cores': 8256, , 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 8192,  'num_sub_agents': 2,
+            "rp.session.radical.marksant.016860.0009", #  'num_exec_instances_per_sub_agent': 4, 'effective_cores': 512, 'num_sub_agents': 2,
+            "rp.session.radical.marksant.016860.0018", # 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 4032, 'num_sub_agents': 2
+            "rp.session.radical.marksant.016860.0027", # 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 1024, 'num_sub_agents': 2
+            "rp.session.radical.marksant.016860.0036", # 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 2048, 'num_sub_agents': 2
         ],
         "4,1 (4)": [
-            "rp.session.radical.marksant.016856.0021", #-  {'pilot_cores': 1152, , 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 1024,  'num_sub_agents': 4,
-            # "rp.session.radical.marksant.016856.0030", # -  {'pilot_cores': 2176, , 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 2048,  'num_sub_agents': 4,
-            "rp.session.radical.marksant.016856.0039", # -  {'pilot_cores': 4224, , 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 4096,  'num_sub_agents': 4,
-            # "rp.session.radical.marksant.016856.0052", # -  {'pilot_cores': 8320, , 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 8192,  'num_sub_agents': 4,
+            "rp.session.radical.marksant.016860.0004", #  'num_exec_instances_per_sub_agent': 1, 'effective_cores': 512, 'num_sub_agents': 4,
+            "rp.session.radical.marksant.016860.0013", # 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 4032, 'num_sub_agents': 4
+            "rp.session.radical.marksant.016860.0022", # 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 1024, 'num_sub_agents': 4
+            "rp.session.radical.marksant.016860.0031", # 'num_exec_instances_per_sub_agent': 1, 'effective_cores': 2048, 'num_sub_agents': 4
         ],
         "4,2 (8)": [
-            "rp.session.radical.marksant.016856.0019", # -  {'pilot_cores': 1152, , 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 1024,  'num_sub_agents': 4,
-            "rp.session.radical.marksant.016856.0028", # -  {'pilot_cores': 2176, , 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 2048,  'num_sub_agents': 4,
-            "rp.session.radical.marksant.016856.0037", # -  {'pilot_cores': 4224, , 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 4096,  'num_sub_agents': 4,
-            "rp.session.radical.marksant.016856.0054", # -  {'pilot_cores': 8320, , 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 8192,  'num_sub_agents': 4,
+            # "rp.session.radical.marksant.016860.0002", #  'num_exec_instances_per_sub_agent': 2, 'effective_cores': 512, 'num_sub_agents': 4,
+            "rp.session.radical.marksant.016860.0011", # 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 4032, 'num_sub_agents': 4
+            "rp.session.radical.marksant.016860.0020", # 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 1024, 'num_sub_agents': 4
+            "rp.session.radical.marksant.016860.0029", # 'num_exec_instances_per_sub_agent': 2, 'effective_cores': 2048, 'num_sub_agents': 4
         ],
         "4,4 (16)": [
-            "rp.session.radical.marksant.016856.0020", #-  {'pilot_cores': 1152, , 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 1024,  'num_sub_agents': 4,
-            "rp.session.radical.marksant.016856.0029", # -  {'pilot_cores': 2176, , 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 2048,  'num_sub_agents': 4,
-            "rp.session.radical.marksant.016856.0038", # -  {'pilot_cores': 4224, , 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 4096,  'num_sub_agents': 4,
-            # "rp.session.radical.marksant.016856.0053", #-  {'pilot_cores': 8320, , 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 8192,  'num_sub_agents': 4,
+            "rp.session.radical.marksant.016860.0003", #  'num_exec_instances_per_sub_agent': 4, 'effective_cores': 512, 'num_sub_agents': 4,
+            "rp.session.radical.marksant.016860.0012", # 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 4032, 'num_sub_agents': 4
+            "rp.session.radical.marksant.016860.0021", # 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 1024, 'num_sub_agents': 4
+            "rp.session.radical.marksant.016860.0030", # 'num_exec_instances_per_sub_agent': 4, 'effective_cores': 2048, 'num_sub_agents': 4
         ],
-
 
 
     }
