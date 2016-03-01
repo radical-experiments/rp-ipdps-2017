@@ -227,7 +227,8 @@ def wait_queue_size_cb(umgr, wait_queue_size):
 #------------------------------------------------------------------------------
 
 
-def construct_agent_config(num_sub_agents, num_exec_instances_per_sub_agent, target, network_interface=None):
+def construct_agent_config(num_sub_agents, num_exec_instances_per_sub_agent,
+        target, network_interface=None, clone_factor=1):
 
     config = {
 
@@ -253,7 +254,7 @@ def construct_agent_config(num_sub_agents, num_exec_instances_per_sub_agent, tar
         # "1" will leave the units unchanged.  Any blowup will leave on unit as the
         # original, and will then create clones with an changed unit ID (see blowup()).
         "clone" : {
-            "AgentWorker"                 : {"input" : 1, "output" : 1},
+            "AgentWorker"                 : {"input" : 1, "output" : clone_factor},
             "AgentStagingInputComponent"  : {"input" : 1, "output" : 1},
             "AgentSchedulingComponent"    : {"input" : 1, "output" : 1},
             "AgentExecutingComponent"     : {"input" : 1, "output" : 1},
@@ -267,11 +268,11 @@ def construct_agent_config(num_sub_agents, num_exec_instances_per_sub_agent, tar
         # 1: drop clones
         # 2: drop everything
         "drop" : {
-            "AgentWorker"                 : {"input" : 1, "output" : 1},
-            "AgentStagingInputComponent"  : {"input" : 1, "output" : 1},
-            "AgentSchedulingComponent"    : {"input" : 1, "output" : 1},
-            "AgentExecutingComponent"     : {"input" : 1, "output" : 1},
-            "AgentStagingOutputComponent" : {"input" : 1, "output" : 1}
+            "AgentWorker"                 : {"input" : 0, "output" : 0},
+            "AgentStagingInputComponent"  : {"input" : 0, "output" : 0},
+            "AgentSchedulingComponent"    : {"input" : 0, "output" : 0},
+            "AgentExecutingComponent"     : {"input" : 0, "output" : 0},
+            "AgentStagingOutputComponent" : {"input" : 0, "output" : 1}
         }
     }
 
@@ -534,6 +535,7 @@ def iterate_experiment(
         repetitions=1,
         exclusive_agent_nodes=True,
         barriers=[],
+        clone=False,
         cu_cores_var=[1], # Number of cores per CU to iterate over
         cu_duration_var=[0], # Duration of the payload
         cancel_on_all_started=False, # Quit once everything is started.
@@ -604,6 +606,7 @@ def iterate_experiment(
                             if skip_few_nodes and nodes < cu_cores:
                                 continue
 
+
                             # Check if fixed cu_count was specified
                             # Note: make a copy because of the loop
                             if cu_count:
@@ -616,14 +619,22 @@ def iterate_experiment(
                                 cus_per_gen = effective_cores / cu_cores
                                 cu_duration = 60 + cus_per_gen / num_sub_agents
                                 report.warn("CU_DURATION GUESSTIMATED at %d seconds.\n" % cu_duration)
+                            # Clone
+                            if clone:
+                                clone_factor = this_cu_count
+                                this_cu_count = 1
+                            else:
+                                clone_factor = 1
 
                             # Create and agent layout
                             agent_config = construct_agent_config(
                                 num_sub_agents=num_sub_agents,
                                 num_exec_instances_per_sub_agent=num_exec_instances_per_sub_agent,
                                 target=resource_config[backend]['TARGET'],
-                                network_interface=resource_config[backend].get('NETWORK_INTERFACE')
+                                network_interface=resource_config[backend].get('NETWORK_INTERFACE'),
+                                clone_factor=clone_factor
                             )
+
 
                             # Fire!!
                             sid, meta = run_experiment(
