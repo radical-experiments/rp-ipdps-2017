@@ -6,6 +6,8 @@ import pandas as pd
 #from radical.pilot import utils as rpu
 from radical.pilot import states as rps
 
+import numpy as np
+
 from common import PICKLE_DIR, get_ppn, get_resources, BARRIER_FONTSIZE, TITLE_FONTSIZE
 
 # Global Pandas settings
@@ -44,14 +46,14 @@ def add_frequency(frame, tgt, window, spec):
         tmp = tmp[tmp[key].isin([val])]
     frame[tgt] = tmp.time.apply(_freq, args=[tmp, window])
 
-    #frame[tgt] = frame[tgt].fillna(0)
+    # frame[tgt] = frame[tgt].fillna(0)
 
     return frame
 
 ###############################################################################
 #
 # TODO: add concurrent CUs on right axis
-def plot(sids, value, label='', paper=False):
+def plot(sids, value, label='', paper=False, window=1.0):
 
     labels = []
 
@@ -107,7 +109,7 @@ def plot(sids, value, label='', paper=False):
         elif value == 'exec_freq':
 
             spec = {'state' : 'Executing', 'event' : 'advance'}
-            add_frequency(unit_prof_df, 'exec_freq', 1, spec)
+            add_frequency(unit_prof_df, 'exec_freq', window, spec)
 
             #
             # feq
@@ -117,6 +119,7 @@ def plot(sids, value, label='', paper=False):
                 (unit_prof_df.event == 'advance') &
                 (unit_prof_df.sid == sid)
                 ][['time', 'exec_freq']]
+
 
         elif value == 'done_freq':
 
@@ -135,20 +138,18 @@ def plot(sids, value, label='', paper=False):
         else:
             raise Exception("Value %s unknown" % value)
 
-
         df.columns = ['time', cores]
-        #df['time'] -= df['time'].min()
+        df['time'] -= df['time'].min()
+        df.time = pd.to_datetime(df.time, unit='s')
+        df.set_index('time', inplace=True)
 
-        from scipy.interpolate import spline
-        from scipy.interpolate import interp1d
-        import numpy as np
 
-        #xnew = np.linspace(df['time'].min(), df['time'].max(), 1000)
-        #power_smooth = spline(df['time'], df[cores], xnew)
-        #power_smooth = interp1d(df['time'], df[cores])
+        def _mean(array_like):
+            return np.mean(array_like)/window
+        df = df.resample('%dL' % int(1000.0*window), how=_mean)
+        df = df.fillna(0)
 
-        #df = df.interpolate(method='cubic')
-
+        print df.head()
 
         if first:
             df_all = df
@@ -160,16 +161,13 @@ def plot(sids, value, label='', paper=False):
 
         first = False
 
-
-    df_all.set_index('time', inplace=True)
+    #df_all.set_index('time', inplace=True)
     print df_all.head(500)
     #df_all.plot(colormap='Paired')
     #df_all.plot(drawstyle='steps-post')
-    df_all.plot(drawstyle='steps')
-    #df_all.plot()
-    #from matplotlib import pyplot
-    #pyplot.plot(xnew, power_smooth)
-
+    df_all.plot(drawstyle='steps-pre')
+    # df_all.plot(drawstyle='steps')
+    # df_all.plot()
 
     # Vertial reference
     # x_ref = info['metadata.generations'] * info['metadata.cu_runtime']
@@ -188,10 +186,10 @@ def plot(sids, value, label='', paper=False):
                   info['metadata.radical_stack.rp'], info['metadata.radical_stack.rs'], info['metadata.radical_stack.ru']
                   ), fontsize=TITLE_FONTSIZE)
     mp.pyplot.xlabel("Time (s)", fontsize=BARRIER_FONTSIZE)
-    mp.pyplot.ylabel("# Concurrent Compute Units", fontsize=BARRIER_FONTSIZE)
-    # mp.pyplot.ylim(0, 200)
-    #mp.pyplot.xlim(2180, 2185)
-    mp.pyplot.xlim(380, 400)
+    mp.pyplot.ylabel("Launch Rate CU/s", fontsize=BARRIER_FONTSIZE)
+    mp.pyplot.ylim(-1,)
+    #mp.pyplot.xlim('0:00', '0:40')
+    #mp.pyplot.xlim(380, 400)
     #mp.pyplot.xlim(675, 680)
     #ax.get_xaxis().set_ticks([])
 
@@ -230,10 +228,11 @@ if __name__ == '__main__':
         # Stampede
         # "rp.session.radical.marksant.016860.0037",
         # "rp.session.radical.marksant.016860.0014",
+        # "rp.session.radical.marksant.016861.0008", # 4096
 
         # Stampede, generation barrier
-        "rp.session.radical.marksant.016861.0006", # 256
-        #"rp.session.radical.marksant.016861.0007", # 4096
+        # "rp.session.radical.marksant.016861.0006", # 256
+        "rp.session.radical.marksant.016861.0007", # 4096
     ]
 
     label = ''
@@ -241,4 +240,4 @@ if __name__ == '__main__':
     for value in ['exec_freq']:
     #for value in ['done_freq']:
     #for value in ['exec']:
-        plot(session_ids, value, label, paper=False)
+        plot(session_ids, value, label, paper=False, window=1)
