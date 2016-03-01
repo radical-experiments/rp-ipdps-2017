@@ -47,25 +47,26 @@ resource_config = {
         'RESOURCE': 'local.localhost',
         'TASK_LAUNCH_METHOD': 'FORK',
         'AGENT_SPAWNER': 'POPEN',
-        #'AGENT_SPAWNER': 'SHELL',
         'TARGET': 'local',
         'PPN': 8
     },
-    'APRUN': {
-        'RESOURCE': 'ncsa.bw',
+    'BW_APRUN': {
+        'TARGET': 'local',
+        'RESOURCE': 'ncsa.bw_aprun',
         'TASK_LAUNCH_METHOD': 'APRUN',
-        'AGENT_SPAWNER': 'SHELL',
-        #'AGENT_SPAWNER': 'POPEN',
-        'QUEUE': 'debug', # Maximum 30 minutes
+        'PROJECT': 'gkd',
+        'AGENT_SPAWNER': 'POPEN',
+        'QUEUE': 'normal', # Maximum 30 minutes
         'PPN': 32
     },
-    'CCM': {
+    'BW_CCM': {
+        'TARGET': 'local',
         'RESOURCE': 'ncsa.bw_ccm',
         #'TASK_LAUNCH_METHOD': 'SSH',
         'TASK_LAUNCH_METHOD': 'MPIRUN',
-        #'AGENT_SPAWNER': 'SHELL',
         'AGENT_SPAWNER': 'POPEN',
-        'QUEUE': 'debug', # Maximum 30 minutes
+        'QUEUE': 'normal', # Maximum 30 minutes
+        'PROJECT': 'gkd',
         'PPN': 32,
         'PRE_EXEC_PREPEND': [
             'module use --append /u/sciteam/marksant/privatemodules',
@@ -73,21 +74,7 @@ resource_config = {
             'module load openmpi/1.8.4_ccm'
         ]
     },
-    'ORTE': {
-        'RESOURCE': 'ncsa.bw',
-        'TASK_LAUNCH_METHOD': "ORTE",
-        'AGENT_SPAWNER': 'SHELL',
-        #'AGENT_SPAWNER': 'POPEN',
-        'NETWORK_INTERFACE': 'ipogif0',
-        #'QUEUE': 'debug', # Maximum 30 minutes
-        'PPN': 32,
-        'PRE_EXEC_PREPEND': [
-            'module use --append /u/sciteam/marksant/privatemodules',
-            'module load use.own',
-            'module load openmpi/git'
-        ]
-    },
-    'BW_LIB': {
+    'BW_ORTELIB': {
         'RESOURCE': 'ncsa.bw_lib',
         'NETWORK_INTERFACE': 'ipogif0',
         'TASK_LAUNCH_METHOD': "ORTE_LIB",
@@ -95,17 +82,17 @@ resource_config = {
         'TARGET': 'node',
         'AGENT_SPAWNER': 'ORTE',
         'PROJECT': 'gkd',
-        'QUEUE': 'debug', # Maximum 30 minutes
+        'QUEUE': 'normal', # Maximum 30 minutes
         'PPN': 32
     },
-    'BW': {
+    'BW_ORTE': {
         'RESOURCE': 'ncsa.bw',
         'NETWORK_INTERFACE': 'ipogif0',
         'TASK_LAUNCH_METHOD': "ORTE",
         'TARGET': 'node',
         'AGENT_SPAWNER': 'POPEN',
         'PROJECT': 'gkd',
-        'QUEUE': 'debug', # Maximum 30 minutes
+        'QUEUE': 'normal', # Maximum 30 minutes
         'PPN': 32
     },
     'TITAN': {
@@ -113,7 +100,6 @@ resource_config = {
         'TARGET': 'node',
         'SCHEMA': 'local',
         'TASK_LAUNCH_METHOD': "ORTE",
-        #'AGENT_SPAWNER': 'SHELL',
         'AGENT_SPAWNER': 'POPEN',
         #'QUEUE': 'debug', # Maximum 60 minutes
         'NETWORK_INTERFACE': 'ipogif0',
@@ -125,20 +111,41 @@ resource_config = {
             #'module load openmpi/git'
         ]
     },
-    'STAMPEDE': {
+    'STAMPEDE_SSH': {
         'RESOURCE': 'xsede.stampede',
         #'SCHEMA': 'local',
         #'TASK_LAUNCH_METHOD': "ORTE",
         'AGENT_SPAWNER': 'POPEN',
-        'TARGET': 'node',
-        'QUEUE': 'development',
-        #'PROJECT': 'TG-MCB090174', # RADICAL
-        'PROJECT': 'TG-MCB150124', # CECAM
+        'TARGET': 'local',
+        #'QUEUE': 'development',
+        'QUEUE': 'normal',
+        'PROJECT': 'TG-MCB090174', # RADICAL
         'PPN': 16,
         'PRE_EXEC_PREPEND': [
-            #'module use --append /u/sciteam/marksant/privatemodules',
-            #'module load use.own',
-            #'module load openmpi/git'
+        ]
+    },
+    'STAMPEDE_ORTE': {
+        'RESOURCE': 'xsede.stampede_orte',
+        #'SCHEMA': 'local',
+        #'TASK_LAUNCH_METHOD': "ORTE",
+        'AGENT_SPAWNER': 'POPEN',
+        'TARGET': 'local',
+        #'QUEUE': 'development',
+        'QUEUE': 'normal',
+        'PROJECT': 'TG-MCB090174', # RADICAL
+        'PPN': 16,
+        'PRE_EXEC_PREPEND': [
+        ]
+    },
+    'STAMPEDE_ORTELIB': {
+        'RESOURCE': 'xsede.stampede_ortelib',
+        #'SCHEMA': 'local',
+        'TARGET': 'local',
+        #'QUEUE': 'development',
+        'QUEUE': 'normal',
+        'PROJECT': 'TG-MCB090174', # RADICAL
+        'PPN': 16,
+        'PRE_EXEC_PREPEND': [
         ]
     },
     'COMET': {
@@ -151,9 +158,6 @@ resource_config = {
         'PROJECT': 'TG-MCB090174', # RADICAL
         'PPN': 24,
         'PRE_EXEC_PREPEND': [
-            #'module use --append /u/sciteam/marksant/privatemodules',
-            #'module load use.own',
-            #'module load openmpi/git'
         ]
     },
     'COMET_ORTE': {
@@ -166,9 +170,6 @@ resource_config = {
         'PROJECT': 'TG-MCB090174', # RADICAL
         'PPN': 24,
         'PRE_EXEC_PREPEND': [
-            #'module use --append /u/sciteam/marksant/privatemodules',
-            #'module load use.own',
-            #'module load openmpi/git'
         ]
     },
     'ARCHER': {
@@ -180,9 +181,6 @@ resource_config = {
         'PROJECT': 'e290',
         'PPN': 24,
         'PRE_EXEC_PREPEND': [
-            #'module use --append /u/sciteam/marksant/privatemodules',
-            #'module load use.own',
-            #'module load openmpi/git'
         ]
     },
 }
@@ -229,7 +227,8 @@ def wait_queue_size_cb(umgr, wait_queue_size):
 #------------------------------------------------------------------------------
 
 
-def construct_agent_config(num_sub_agents, num_exec_instances_per_sub_agent, target, network_interface=None):
+def construct_agent_config(num_sub_agents, num_exec_instances_per_sub_agent,
+        target, network_interface=None, clone_factor=1):
 
     config = {
 
@@ -255,7 +254,7 @@ def construct_agent_config(num_sub_agents, num_exec_instances_per_sub_agent, tar
         # "1" will leave the units unchanged.  Any blowup will leave on unit as the
         # original, and will then create clones with an changed unit ID (see blowup()).
         "clone" : {
-            "AgentWorker"                 : {"input" : 1, "output" : 1},
+            "AgentWorker"                 : {"input" : 1, "output" : clone_factor},
             "AgentStagingInputComponent"  : {"input" : 1, "output" : 1},
             "AgentSchedulingComponent"    : {"input" : 1, "output" : 1},
             "AgentExecutingComponent"     : {"input" : 1, "output" : 1},
@@ -269,11 +268,11 @@ def construct_agent_config(num_sub_agents, num_exec_instances_per_sub_agent, tar
         # 1: drop clones
         # 2: drop everything
         "drop" : {
-            "AgentWorker"                 : {"input" : 1, "output" : 1},
-            "AgentStagingInputComponent"  : {"input" : 1, "output" : 1},
-            "AgentSchedulingComponent"    : {"input" : 1, "output" : 1},
-            "AgentExecutingComponent"     : {"input" : 1, "output" : 1},
-            "AgentStagingOutputComponent" : {"input" : 1, "output" : 1}
+            "AgentWorker"                 : {"input" : 0, "output" : 0},
+            "AgentStagingInputComponent"  : {"input" : 0, "output" : 0},
+            "AgentSchedulingComponent"    : {"input" : 0, "output" : 0},
+            "AgentExecutingComponent"     : {"input" : 0, "output" : 0},
+            "AgentStagingOutputComponent" : {"input" : 0, "output" : 1}
         }
     }
 
@@ -536,6 +535,7 @@ def iterate_experiment(
         repetitions=1,
         exclusive_agent_nodes=True,
         barriers=[],
+        clone=False,
         cu_cores_var=[1], # Number of cores per CU to iterate over
         cu_duration_var=[0], # Duration of the payload
         cancel_on_all_started=False, # Quit once everything is started.
@@ -606,6 +606,7 @@ def iterate_experiment(
                             if skip_few_nodes and nodes < cu_cores:
                                 continue
 
+
                             # Check if fixed cu_count was specified
                             # Note: make a copy because of the loop
                             if cu_count:
@@ -618,14 +619,22 @@ def iterate_experiment(
                                 cus_per_gen = effective_cores / cu_cores
                                 cu_duration = 60 + cus_per_gen / num_sub_agents
                                 report.warn("CU_DURATION GUESSTIMATED at %d seconds.\n" % cu_duration)
+                            # Clone
+                            if clone:
+                                clone_factor = this_cu_count
+                                this_cu_count = 1
+                            else:
+                                clone_factor = 1
 
                             # Create and agent layout
                             agent_config = construct_agent_config(
                                 num_sub_agents=num_sub_agents,
                                 num_exec_instances_per_sub_agent=num_exec_instances_per_sub_agent,
                                 target=resource_config[backend]['TARGET'],
-                                network_interface=resource_config[backend].get('NETWORK_INTERFACE')
+                                network_interface=resource_config[backend].get('NETWORK_INTERFACE'),
+                                clone_factor=clone_factor
                             )
+
 
                             # Fire!!
                             sid, meta = run_experiment(
