@@ -47,25 +47,26 @@ resource_config = {
         'RESOURCE': 'local.localhost',
         'TASK_LAUNCH_METHOD': 'FORK',
         'AGENT_SPAWNER': 'POPEN',
-        #'AGENT_SPAWNER': 'SHELL',
         'TARGET': 'local',
         'PPN': 8
     },
-    'APRUN': {
-        'RESOURCE': 'ncsa.bw',
+    'BW_APRUN': {
+        'TARGET': 'local',
+        'RESOURCE': 'ncsa.bw_aprun',
         'TASK_LAUNCH_METHOD': 'APRUN',
-        'AGENT_SPAWNER': 'SHELL',
-        #'AGENT_SPAWNER': 'POPEN',
-        'QUEUE': 'debug', # Maximum 30 minutes
+        'PROJECT': 'gkd',
+        'AGENT_SPAWNER': 'POPEN',
+        'QUEUE': 'normal', # Maximum 30 minutes
         'PPN': 32
     },
-    'CCM': {
+    'BW_CCM': {
+        'TARGET': 'local',
         'RESOURCE': 'ncsa.bw_ccm',
         #'TASK_LAUNCH_METHOD': 'SSH',
         'TASK_LAUNCH_METHOD': 'MPIRUN',
-        #'AGENT_SPAWNER': 'SHELL',
         'AGENT_SPAWNER': 'POPEN',
-        'QUEUE': 'debug', # Maximum 30 minutes
+        'QUEUE': 'normal', # Maximum 30 minutes
+        'PROJECT': 'gkd',
         'PPN': 32,
         'PRE_EXEC_PREPEND': [
             'module use --append /u/sciteam/marksant/privatemodules',
@@ -73,21 +74,7 @@ resource_config = {
             'module load openmpi/1.8.4_ccm'
         ]
     },
-    'ORTE': {
-        'RESOURCE': 'ncsa.bw',
-        'TASK_LAUNCH_METHOD': "ORTE",
-        'AGENT_SPAWNER': 'SHELL',
-        #'AGENT_SPAWNER': 'POPEN',
-        'NETWORK_INTERFACE': 'ipogif0',
-        #'QUEUE': 'debug', # Maximum 30 minutes
-        'PPN': 32,
-        'PRE_EXEC_PREPEND': [
-            'module use --append /u/sciteam/marksant/privatemodules',
-            'module load use.own',
-            'module load openmpi/git'
-        ]
-    },
-    'BW_LIB': {
+    'BW_ORTELIB': {
         'RESOURCE': 'ncsa.bw_lib',
         'NETWORK_INTERFACE': 'ipogif0',
         'TASK_LAUNCH_METHOD': "ORTE_LIB",
@@ -95,17 +82,17 @@ resource_config = {
         'TARGET': 'node',
         'AGENT_SPAWNER': 'ORTE',
         'PROJECT': 'gkd',
-        'QUEUE': 'debug', # Maximum 30 minutes
+        'QUEUE': 'normal', # Maximum 30 minutes
         'PPN': 32
     },
-    'BW': {
+    'BW_ORTE': {
         'RESOURCE': 'ncsa.bw',
         'NETWORK_INTERFACE': 'ipogif0',
         'TASK_LAUNCH_METHOD': "ORTE",
         'TARGET': 'node',
         'AGENT_SPAWNER': 'POPEN',
         'PROJECT': 'gkd',
-        'QUEUE': 'debug', # Maximum 30 minutes
+        'QUEUE': 'normal', # Maximum 30 minutes
         'PPN': 32
     },
     'TITAN': {
@@ -113,7 +100,6 @@ resource_config = {
         'TARGET': 'node',
         'SCHEMA': 'local',
         'TASK_LAUNCH_METHOD': "ORTE",
-        #'AGENT_SPAWNER': 'SHELL',
         'AGENT_SPAWNER': 'POPEN',
         #'QUEUE': 'debug', # Maximum 60 minutes
         'NETWORK_INTERFACE': 'ipogif0',
@@ -125,49 +111,41 @@ resource_config = {
             #'module load openmpi/git'
         ]
     },
-    'STAMPEDE': {
+    'STAMPEDE_SSH': {
         'RESOURCE': 'xsede.stampede',
         #'SCHEMA': 'local',
         #'TASK_LAUNCH_METHOD': "ORTE",
-        #'AGENT_SPAWNER': 'POPEN',
+        'AGENT_SPAWNER': 'POPEN',
         'TARGET': 'local',
-        'QUEUE': 'development',
+        #'QUEUE': 'development',
+        'QUEUE': 'normal',
         'PROJECT': 'TG-MCB090174', # RADICAL
         'PPN': 16,
         'PRE_EXEC_PREPEND': [
-            #'module use --append /u/sciteam/marksant/privatemodules',
-            #'module load use.own',
-            #'module load openmpi/git'
         ]
     },
     'STAMPEDE_ORTE': {
         'RESOURCE': 'xsede.stampede_orte',
         #'SCHEMA': 'local',
         #'TASK_LAUNCH_METHOD': "ORTE",
-        #'AGENT_SPAWNER': 'POPEN',
+        'AGENT_SPAWNER': 'POPEN',
         'TARGET': 'local',
-        'QUEUE': 'development',
+        #'QUEUE': 'development',
+        'QUEUE': 'normal',
         'PROJECT': 'TG-MCB090174', # RADICAL
         'PPN': 16,
         'PRE_EXEC_PREPEND': [
-            #'module use --append /u/sciteam/marksant/privatemodules',
-            #'module load use.own',
-            #'module load openmpi/git'
         ]
     },
     'STAMPEDE_ORTELIB': {
         'RESOURCE': 'xsede.stampede_ortelib',
         #'SCHEMA': 'local',
-        #'TASK_LAUNCH_METHOD': "ORTE",
-        #'AGENT_SPAWNER': 'POPEN',
         'TARGET': 'local',
-        'QUEUE': 'development',
+        #'QUEUE': 'development',
+        'QUEUE': 'normal',
         'PROJECT': 'TG-MCB090174', # RADICAL
         'PPN': 16,
         'PRE_EXEC_PREPEND': [
-            #'module use --append /u/sciteam/marksant/privatemodules',
-            #'module load use.own',
-            #'module load openmpi/git'
         ]
     },
     'COMET': {
@@ -180,9 +158,6 @@ resource_config = {
         'PROJECT': 'TG-MCB090174', # RADICAL
         'PPN': 24,
         'PRE_EXEC_PREPEND': [
-            #'module use --append /u/sciteam/marksant/privatemodules',
-            #'module load use.own',
-            #'module load openmpi/git'
         ]
     },
     'COMET_ORTE': {
@@ -195,9 +170,6 @@ resource_config = {
         'PROJECT': 'TG-MCB090174', # RADICAL
         'PPN': 24,
         'PRE_EXEC_PREPEND': [
-            #'module use --append /u/sciteam/marksant/privatemodules',
-            #'module load use.own',
-            #'module load openmpi/git'
         ]
     },
     'ARCHER': {
@@ -209,9 +181,6 @@ resource_config = {
         'PROJECT': 'e290',
         'PPN': 24,
         'PRE_EXEC_PREPEND': [
-            #'module use --append /u/sciteam/marksant/privatemodules',
-            #'module load use.own',
-            #'module load openmpi/git'
         ]
     },
 }
