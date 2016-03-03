@@ -22,12 +22,16 @@ def collect(sid):
         client_dir = 'go://olcf#dtn/ccs/home/marksant1/ccgrid16/client'
         #client_dir = 'go://olcf#dtn_atlas/ccs/home/marksant1/ccgrid16/client'
         target_dir = 'go://localhost%s' % TARGET_DIR
+
     # If we ran on another client, only change the client
     elif 'rp.session.ip-10-184-31-85.santcroos' in sid:
         client_dir = 'sftp://ec2-107-21-218-167.compute-1.amazonaws.com/home/santcroos/experiments/ccgrid16/client'
 
     elif 'rp.session.radical.marksant' in sid:
         client_dir = 'sftp://radserv/home/marksant/sc16/client'
+
+    elif 'mw.session.netbook.mark' in sid:
+        client_dir = '/Users/mark/proj/openmpi/mysubmit/client'
 
     report.info("Collecting profiles for session: %s.\n" % sid)
     rpu.fetch_profiles(sid=sid, client=client_dir, tgt=target_dir,
