@@ -6,7 +6,6 @@ import radical.pilot.utils as rpu
 import radical.utils as ru
 import pandas as pd
 from multiprocessing import Pool
-from itertools import repeat
 
 from common import JSON_DIR, TARGET_DIR, PICKLE_DIR, HDF5_DIR
 
@@ -36,15 +35,21 @@ def json2frame(db, sid):
     session_info.set_index('_id', inplace=True)
     session_info.index.name = None
 
-    unit_info = pd.io.json.json_normalize(json_docs['unit'])
-    unit_info.set_index('_id', inplace=True)
-    unit_info.index.name = None
-    unit_info.insert(0, 'sid', sid)
+    try:
+        unit_info = pd.io.json.json_normalize(json_docs['unit'])
+        unit_info.set_index('_id', inplace=True)
+        unit_info.index.name = None
+        unit_info.insert(0, 'sid', sid)
+    except Exception as e:
+        unit_info = pd.DataFrame()
 
-    pilot_info = pd.io.json.json_normalize(json_docs['pilot'])
-    pilot_info.set_index('_id', inplace=True)
-    pilot_info.index.name = None
-    pilot_info.insert(0, 'sid', sid)
+    try:
+        pilot_info = pd.io.json.json_normalize(json_docs['pilot'])
+        pilot_info.set_index('_id', inplace=True)
+        pilot_info.index.name = None
+        pilot_info.insert(0, 'sid', sid)
+    except:
+        pilot_info = pd.DataFrame()
 
     return session_info, pilot_info, unit_info
 
@@ -64,7 +69,7 @@ def find_profiles(sid):
 
 ###############################################################################
 #
-def preprocess((sid, shim)):
+def preprocess(sid):
 
     session_dir = os.path.join(PICKLE_DIR, sid)
 
@@ -103,101 +108,98 @@ def preprocess((sid, shim)):
 
         report.info("Head of CU DF for session %s:\n" % sid)
         rpu.add_states(cu_prof_fr)
+        report.info("Head of CU DF for session %s (after states added):\n" % sid)
         print cu_prof_fr.head()
 
-        if not shim:
-            report.info("Head of CU DF for session %s (after states added):\n" % sid)
-            rpu.add_info(cu_prof_fr)
-            print cu_prof_fr.head()
-            report.info("Head of CU DF for session %s (after info added):\n" % sid)
-            print cu_prof_fr.head()
+        report.info("Head of CU DF for session %s (after info added):\n" % sid)
+        rpu.add_info(cu_prof_fr)
+        print cu_prof_fr.head()
 
-            report.info("Head of CU DF for session %s (after concurrency added):\n" % sid)
+        report.info("Head of CU DF for session %s (after concurrency added):\n" % sid)
 
-            # Add a column with the number of concurrent populating the database
-            spec = {
-                'in': [
-                    {'state': rps.STAGING_INPUT, 'event': 'advance'}
-                ],
-                'out' : [
-                    {'state':rps.AGENT_STAGING_INPUT_PENDING, 'event': 'advance'},
-                    {'state':rps.FAILED, 'event': 'advance'},
-                    {'state':rps.CANCELED, 'event': 'advance'}
-                ]
-            }
-            rpu.add_concurrency (cu_prof_fr, 'cc_populating', spec)
+        # Add a column with the number of concurrent populating the database
+        spec = {
+            'in': [
+                {'state': rps.STAGING_INPUT, 'event': 'advance'}
+            ],
+            'out' : [
+                {'state':rps.AGENT_STAGING_INPUT_PENDING, 'event': 'advance'},
+                {'state':rps.FAILED, 'event': 'advance'},
+                {'state':rps.CANCELED, 'event': 'advance'}
+            ]
+        }
+        rpu.add_concurrency (cu_prof_fr, 'cc_populating', spec)
 
-            # Add a column with the number of concurrent staging in units
-            spec = {
-                'in': [
-                    {'state': rps.AGENT_STAGING_INPUT, 'event': 'advance'}
-                ],
-                'out' : [
-                    {'state':rps.ALLOCATING_PENDING, 'event': 'advance'},
-                    {'state':rps.FAILED, 'event': 'advance'},
-                    {'state':rps.CANCELED, 'event': 'advance'}
-                ]
-            }
-            rpu.add_concurrency (cu_prof_fr, 'cc_stage_in', spec)
+        # Add a column with the number of concurrent staging in units
+        spec = {
+            'in': [
+                {'state': rps.AGENT_STAGING_INPUT, 'event': 'advance'}
+            ],
+            'out' : [
+                {'state':rps.ALLOCATING_PENDING, 'event': 'advance'},
+                {'state':rps.FAILED, 'event': 'advance'},
+                {'state':rps.CANCELED, 'event': 'advance'}
+            ]
+        }
+        rpu.add_concurrency (cu_prof_fr, 'cc_stage_in', spec)
 
-            # Add a column with the number of concurrent scheduling units
-            spec = {
-                'in': [
-                    {'state': rps.ALLOCATING, 'event': 'advance'}
-                ],
-                'out' : [
-                    {'state':rps.EXECUTING_PENDING, 'event': 'advance'},
-                    {'state':rps.FAILED, 'event': 'advance'},
-                    {'state':rps.CANCELED, 'event': 'advance'}
-                ]
-            }
-            rpu.add_concurrency (cu_prof_fr, 'cc_sched', spec)
+        # Add a column with the number of concurrent scheduling units
+        spec = {
+            'in': [
+                {'state': rps.ALLOCATING, 'event': 'advance'}
+            ],
+            'out' : [
+                {'state':rps.EXECUTING_PENDING, 'event': 'advance'},
+                {'state':rps.FAILED, 'event': 'advance'},
+                {'state':rps.CANCELED, 'event': 'advance'}
+            ]
+        }
+        rpu.add_concurrency (cu_prof_fr, 'cc_sched', spec)
 
-            # Add a column with the number of concurrent Executing units
-            spec = {
-                'in': [
-                    {'state': rps.EXECUTING, 'event': 'advance'}
-                ],
-                'out' : [
-                    {'state':rps.AGENT_STAGING_OUTPUT_PENDING, 'event': 'advance'},
-                    {'state':rps.FAILED, 'event': 'advance'},
-                    {'state':rps.CANCELED, 'event': 'advance'}
-                ]
-            }
-            rpu.add_concurrency (cu_prof_fr, 'cc_exec', spec)
+        # Add a column with the number of concurrent Executing units
+        spec = {
+            'in': [
+                {'state': rps.EXECUTING, 'event': 'advance'}
+            ],
+            'out' : [
+                {'state':rps.AGENT_STAGING_OUTPUT_PENDING, 'event': 'advance'},
+                {'state':rps.FAILED, 'event': 'advance'},
+                {'state':rps.CANCELED, 'event': 'advance'}
+            ]
+        }
+        rpu.add_concurrency (cu_prof_fr, 'cc_exec', spec)
 
-            # Add a column with the number of concurrent Executing units
-            spec = {
-                'in': [
-                    {'state': rps.AGENT_STAGING_OUTPUT, 'event': 'advance'}
-                ],
-                'out' : [
-                    {'state':rps.PENDING_OUTPUT_STAGING, 'event': 'advance'},
-                    {'state':rps.FAILED, 'event': 'advance'},
-                    {'state':rps.CANCELED, 'event': 'advance'}
-                ]
-            }
-            rpu.add_concurrency (cu_prof_fr, 'cc_stage_out', spec)
+        # Add a column with the number of concurrent Executing units
+        spec = {
+            'in': [
+                {'state': rps.AGENT_STAGING_OUTPUT, 'event': 'advance'}
+            ],
+            'out' : [
+                {'state':rps.PENDING_OUTPUT_STAGING, 'event': 'advance'},
+                {'state':rps.FAILED, 'event': 'advance'},
+                {'state':rps.CANCELED, 'event': 'advance'}
+            ]
+        }
+        rpu.add_concurrency (cu_prof_fr, 'cc_stage_out', spec)
 
-            print cu_prof_fr.head()
+        print cu_prof_fr.head()
 
         report.info("Head of CU DF for session %s (after sid added):\n" % sid)
         cu_prof_fr.insert(0, 'sid', sid)
         print cu_prof_fr.head()
 
-        if not shim:
-            report.info("CU DF columns for session %s:\n" % sid)
-            print cu_prof_fr['info'].unique()
+        report.info("CU DF columns for session %s:\n" % sid)
+        print cu_prof_fr['info'].unique()
 
-            # transpose
-            tr_cu_prof_fr = rpu.get_info_df(cu_prof_fr)
-            tr_cu_prof_fr.insert(0, 'sid', sid)
-            report.info("Head of Transposed CU DF for session %s:\n" % sid)
-            print tr_cu_prof_fr.head()
+        # transpose
+        tr_cu_prof_fr = rpu.get_info_df(cu_prof_fr)
+        tr_cu_prof_fr.insert(0, 'sid', sid)
+        report.info("Head of Transposed CU DF for session %s:\n" % sid)
+        print tr_cu_prof_fr.head()
 
-            ses_info_fr, pilot_info_fr, unit_info_fr = json2frame(db=None, sid=sid)
-            report.info("Head of json Docs for session %s:\n" % sid)
-            print ses_info_fr.head()
+        report.info("Head of json Docs for session %s:\n" % sid)
+        ses_info_fr, pilot_info_fr, unit_info_fr = json2frame(db=None, sid=sid)
+        print ses_info_fr.head()
 
     except Exception as e:
         report.error("Failed to pre-process data for session %s (%s)" % (sid, e))
@@ -208,14 +210,14 @@ def preprocess((sid, shim)):
 
         os.mkdir(session_dir)
 
-        if not shim:
-            ses_info_fr.to_pickle(os.path.join(session_dir, 'session_info.pkl'))
-            pilot_info_fr.to_pickle(os.path.join(session_dir, 'pilot_info.pkl'))
-            unit_info_fr.to_pickle(os.path.join(session_dir, 'unit_info.pkl'))
-            tr_cu_prof_fr.to_pickle(os.path.join(session_dir, 'tr_unit_prof.pkl'))
+        tr_cu_prof_fr.to_pickle(os.path.join(session_dir, 'tr_unit_prof.pkl'))
+        ses_info_fr.to_pickle(os.path.join(session_dir, 'session_info.pkl'))
+        pilot_info_fr.to_pickle(os.path.join(session_dir, 'pilot_info.pkl'))
+        unit_info_fr.to_pickle(os.path.join(session_dir, 'unit_info.pkl'))
         ses_prof_fr.to_pickle(os.path.join(session_dir, 'session_prof.pkl'))
         pilot_prof_fr.to_pickle(os.path.join(session_dir, 'pilot_prof.pkl'))
         cu_prof_fr.to_pickle(os.path.join(session_dir, 'unit_prof.pkl'))
+
     except Exception as e:
         report.error("Failed to write data: %s" % e)
         return
@@ -223,13 +225,11 @@ def preprocess((sid, shim)):
 
 ###############################################################################
 #
-def preprocess_all(session_ids, shim=False):
+def preprocess_all(session_ids):
 
     pool = Pool()
 
-    pool.map(preprocess, zip(session_ids, repeat(shim)), chunksize=1)
-
-
+    pool.map(preprocess, session_ids, chunksize=1)
 
 
 ###############################################################################
@@ -265,4 +265,4 @@ if __name__ == '__main__':
     if not session_ids:
         session_ids = find_sessions(JSON_DIR)
 
-    preprocess_all(session_ids, shim=True)
+    preprocess_all(session_ids)
