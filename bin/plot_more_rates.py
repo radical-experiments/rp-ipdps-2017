@@ -59,22 +59,28 @@ def plot(sid, values, label='', paper=False, window=1.0):
 
     first = True
 
+    if sid.startswith('rp.session'):
+        rp = True
+    else:
+        rp = False
 
     session_dir = os.path.join(PICKLE_DIR, sid)
 
-    unit_info_df = pd.read_pickle(os.path.join(session_dir, 'unit_info.pkl'))
     pilot_info_df = pd.read_pickle(os.path.join(session_dir, 'pilot_info.pkl'))
-    unit_prof_df = pd.read_pickle(os.path.join(session_dir, 'unit_prof.pkl'))
     session_info_df = pd.read_pickle(os.path.join(session_dir, 'session_info.pkl'))
-
+    unit_info_df = pd.read_pickle(os.path.join(session_dir, 'unit_info.pkl'))
+    unit_prof_df = pd.read_pickle(os.path.join(session_dir, 'unit_prof.pkl'))
 
     # Legend info
     info = session_info_df.loc[sid]
 
-    # For this call assume that there is only one pilot per session
-    resources = get_resources(unit_info_df, pilot_info_df, sid)
-    assert len(resources) == 1
-    resource_label = resources.values()[0]
+    if rp:
+        # For this call assume that there is only one pilot per session
+        resources = get_resources(unit_info_df, pilot_info_df, sid)
+        assert len(resources) == 1
+        resource_label = resources.values()[0]
+    else:
+        resource_label = "bogus"
 
     # Get only the entries for this session
     #uf = unit_prof_df[unit_prof_df['sid'] == sid]
