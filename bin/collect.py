@@ -33,6 +33,12 @@ def collect(sid):
     elif 'mw.session.netbook.mark' in sid:
         client_dir = '/Users/mark/proj/openmpi/mysubmit/client'
 
+    elif 'mw.session' in sid and 'stampede.tacc.utexas.edu.marksant' in sid:
+        client_dir = 'sftp://stampede/home1/01740/marksant/mysubmit'
+
+    elif 'mw.session.h2ologin' in sid or 'mw.session.nid' in sid:
+        client_dir = 'gsisftp://bw/u/sciteam/marksant/mysubmit'
+
     report.info("Collecting profiles for session: %s.\n" % sid)
     rpu.fetch_profiles(sid=sid, client=client_dir, tgt=target_dir,
                        access=access, skip_existing=True)
