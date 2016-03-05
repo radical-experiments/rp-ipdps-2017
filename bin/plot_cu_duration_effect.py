@@ -52,18 +52,21 @@ def plot(sids, paper=False):
             # Get only the entries for this session
             tuf = tr_unit_prof_df[tr_unit_prof_df['sid'] == sid]
 
-            # Only take completed CUs into account
-            #tuf = tuf[tuf['Done'].notnull()]
-
             # We sort the units based on the order they arrived at the agent
             #tufs = tuf.sort('awo_get_u_pend')
             #tufs = tuf.sort('awo_adv_u')
             tufs = tuf.sort('asic_get_u_pend')
 
             val = orte_ttc[cu_runtime].append(pd.Series((tufs['aec_after_exec'].max() - tufs['asic_get_u_pend'].min())))
-            val /= (generations * cu_runtime)
-            val = 1 / val
-            val *= 100
+            if val[0] < (generations * cu_runtime):
+                # This likely means the pilot runtime was too short and we didn't complete all cu's
+                print ("Einstein was wrong!?!")
+                val = 0
+            else:
+                val /= (generations * cu_runtime)
+                val = 1 / val
+                val *= 100
+
             orte_ttc[cu_runtime] = val
 
         print 'orte_ttc raw:', orte_ttc
