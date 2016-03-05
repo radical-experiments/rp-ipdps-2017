@@ -61,21 +61,28 @@ def plot(sids, value, label='', paper=False, window=1.0):
 
     for sid in sids:
 
+        if sid.startswith('rp.session'):
+            rp = True
+        else:
+            rp = False
+
         session_dir = os.path.join(PICKLE_DIR, sid)
 
         unit_info_df = pd.read_pickle(os.path.join(session_dir, 'unit_info.pkl'))
         pilot_info_df = pd.read_pickle(os.path.join(session_dir, 'pilot_info.pkl'))
-        unit_prof_df = pd.read_pickle(os.path.join(session_dir, 'unit_prof.pkl'))
         session_info_df = pd.read_pickle(os.path.join(session_dir, 'session_info.pkl'))
-
+        unit_prof_df = pd.read_pickle(os.path.join(session_dir, 'unit_prof.pkl'))
 
         # Legend info
         info = session_info_df.loc[sid]
 
-        # For this call assume that there is only one pilot per session
-        resources = get_resources(unit_info_df, pilot_info_df, sid)
-        assert len(resources) == 1
-        resource_label = resources.values()[0]
+        if rp:
+            # For this call assume that there is only one pilot per session
+            resources = get_resources(unit_info_df, pilot_info_df, sid)
+            assert len(resources) == 1
+            resource_label = resources.values()[0]
+        else:
+            resource_label = "bogus"
 
         # Get only the entries for this session
         #uf = unit_prof_df[unit_prof_df['sid'] == sid]
@@ -154,10 +161,12 @@ def plot(sids, value, label='', paper=False, window=1.0):
         if first:
             df_all = df
         else:
-            df_all = pd.merge(df_all, df,  on='time', how='outer')
+            #df_all = pd.merge(df_all, df,  on='time', how='outer')
+            #df_all = pd.merge(df_all, df, how='outer')
+            df_all = pd.concat([df_all, df], axis=1)
 
         #labels.append("Cores: %d" % cores)
-        labels.append("%d" % cores)
+        labels.append("%d - %s" % (cores, 'RP' if rp else 'ORTE'))
 
         first = False
 
@@ -168,11 +177,6 @@ def plot(sids, value, label='', paper=False, window=1.0):
     df_all.plot(drawstyle='steps-pre')
     # df_all.plot(drawstyle='steps')
     # df_all.plot()
-
-    # Vertial reference
-    # x_ref = info['metadata.generations'] * info['metadata.cu_runtime']
-    # mp.pyplot.plot((x_ref, x_ref),(0, 1000), 'k--')
-    # labels.append("Optimal")
 
     mp.pyplot.legend(labels, loc='upper right', fontsize=BARRIER_FONTSIZE, labelspacing=0)
     if not paper:
