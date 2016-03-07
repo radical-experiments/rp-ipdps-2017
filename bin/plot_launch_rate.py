@@ -191,7 +191,7 @@ def plot(sids, value, label='', paper=False, window=1.0):
                   ), fontsize=TITLE_FONTSIZE)
     mp.pyplot.xlabel("Time (s)", fontsize=BARRIER_FONTSIZE)
     mp.pyplot.ylabel("Launch Rate CU/s", fontsize=BARRIER_FONTSIZE)
-    mp.pyplot.ylim(-1,)
+    #mp.pyplot.ylim(-1,)
     #mp.pyplot.xlim('0:00', '0:40')
     #mp.pyplot.xlim(380, 400)
     #mp.pyplot.xlim(675, 680)
@@ -236,7 +236,26 @@ if __name__ == '__main__':
 
         # Stampede, generation barrier
         # "rp.session.radical.marksant.016861.0006", # 256
-        "rp.session.radical.marksant.016861.0007", # 4096
+        # "rp.session.radical.marksant.016861.0007", # 4096
+        #"rp.session.netbook.test1"
+        # 'mw.session.netbook.mark.016863.0014',
+
+        # Stampede ORTE
+        # 'mw.session.login3.stampede.tacc.utexas.edu.marksant.016863.0005',
+        # 'mw.session.login3.stampede.tacc.utexas.edu.marksant.016863.0007',
+
+        # 'mw.session.h2ologin3.marksant.016863.0001',
+
+        # 'mw.session.h2ologin2.marksant.016863.0006', # ORTE only 4096x3
+        # 'mw.session.h2ologin2.marksant.016863.0007', # ORTE only 4096x3
+        # 'mw.session.nid25431.marksant.016863.0009', # ORTE only 8192x3
+
+        #'mw.session.netbook.mark.016865.0041',
+        # 'rp.session.radical.marksant.016865.0039',
+        'rp.session.radical.marksant.016865.0040', # 4k
+        'mw.session.nid25429.marksant.016865.0005' # 4k
+
+        # 'mw.session.login3.stampede.tacc.utexas.edu.marksant.016863.0010'
     ]
 
     label = ''

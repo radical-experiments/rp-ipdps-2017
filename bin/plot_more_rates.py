@@ -92,18 +92,23 @@ def plot(sid, values, label='', paper=False, window=1.0):
 
     for value in values:
 
-        if 'exec_freq' == value:
-            spec = {'state' : rps.EXECUTING, 'event' : 'advance'}
-
-        elif 'done_freq' == value:
-            spec = {'state' : rps.AGENT_STAGING_OUTPUT_PENDING, 'event' : 'advance'}
-
-        elif 'stagein_freq' == value:
+        if 'stagein_freq' == value:
             spec = {'state': rps.AGENT_STAGING_INPUT, 'event': 'advance'}
 
         elif 'sched_freq' == value:
-            #spec = {'state': rps.ALLOCATING, 'event': 'advance'}
             spec = {'state': rps.EXECUTING_PENDING, 'event': 'advance'}
+
+        elif 'exec_freq' == value:
+            spec = {'state' : rps.EXECUTING, 'event' : 'advance'}
+
+        elif 'fork_freq' == value:
+            spec = {'info' : 'aec_start_script'}
+
+        elif 'exit_freq' == value:
+            spec = {'info' : 'aec_after_exec'}
+
+        elif 'stageout_pend_freq' == value:
+            spec = {'state' : rps.AGENT_STAGING_OUTPUT_PENDING, 'event' : 'advance'}
 
         elif 'stageout_freq' == value:
             spec = {'state': rps.AGENT_STAGING_OUTPUT, 'event': 'advance'}
@@ -111,10 +116,12 @@ def plot(sid, values, label='', paper=False, window=1.0):
         else:
             raise Exception("Value %s unknown" % value)
 
+        print unit_prof_df.head()
+
         add_frequency(unit_prof_df, value, window, spec)
         df = unit_prof_df[
             (unit_prof_df[value] >= 0) &
-            (unit_prof_df.event == 'advance') &
+            #(unit_prof_df.event == 'advance') &
             (unit_prof_df.sid == sid)
             ][['time', value]]
 
@@ -156,7 +163,7 @@ def plot(sid, values, label='', paper=False, window=1.0):
     #print df_all.head(500)
     #df_all.plot(colormap='Paired')
     #df_all.plot(drawstyle='steps-post')
-    df_all.plot(drawstyle='steps-pre')
+    ax = df_all.plot(drawstyle='steps-pre')
     # df_all.plot(drawstyle='steps')
     #df_all.plot()
 
@@ -178,12 +185,17 @@ def plot(sid, values, label='', paper=False, window=1.0):
                   ), fontsize=TITLE_FONTSIZE)
     mp.pyplot.xlabel("Time (s)", fontsize=BARRIER_FONTSIZE)
     mp.pyplot.ylabel("Rate (CU/s)", fontsize=BARRIER_FONTSIZE)
-    mp.pyplot.ylim(-1,)
-    #mp.pyplot.xlim('0:00', '0:40')
+    #mp.pyplot.ylim(-1, 400)
+    #mp.pyplot.xlim(-1,)
+    #mp.pyplot.xlim(['1/1/2000', '1/1/2000'])
+    #mp.pyplot.xlim('03:00', '04:00')
     #mp.pyplot.xlim(380, 400)
     #mp.pyplot.xlim(675, 680)
     #ax.get_xaxis().set_ticks([])
 
+    #mp.pyplot.xlim((60000.0, 200000.0))
+
+    print "xlim:", ax.get_xlim()
     mp.pyplot.savefig('plot_more_rates.pdf')
     mp.pyplot.close()
 
@@ -211,7 +223,7 @@ if __name__ == '__main__':
     # BW
     # "rp.session.radical.marksant.016855.0006", # 1024
     # "rp.session.radical.marksant.016855.0008", # 2048
-    # "rp.session.radical.marksant.016855.0005", # 4096
+    # session_id = "rp.session.radical.marksant.016855.0005" # 4096
     # session_id = "rp.session.radical.marksant.016855.0007" # 8192
 
     # Stampede
@@ -224,10 +236,38 @@ if __name__ == '__main__':
     # session_id = "rp.session.radical.marksant.016861.0007" # 4096
 
 
+    #
+    # ORTE ONLY
+    #
+
+    # Stampede
+    # session_id = 'mw.session.login3.stampede.tacc.utexas.edu.marksant.016863.0010'
+
+    # Blue Waters
+    # session_id = 'mw.session.h2ologin3.marksant.016863.0003' # 64 x 3
+    # session_id = 'mw.session.h2ologin2.marksant.016863.0006' # 4096 x 3
+    # session_id = 'mw.session.nid25431.marksant.016863.0009' # 8192x3
+    # session_id = 'mw.session.nid25263.marksant.016864.0000' # 8192 cores 10k x
+    # session_id = 'mw.session.login3.stampede.tacc.utexas.edu.marksant.016864.0001' # stampede 8k x 3
+    # session_id = 'mw.session.login3.stampede.tacc.utexas.edu.marksant.016864.0002' # 100k 0s interrupted at ~75k
+
+    # session_id = 'rp.session.radical.marksant.016864.0001' # stampede, 8k, 5gen
+
+    # session_id = 'mw.session.netbook.mark.016865.0044'
+    # session_id = 'rp.session.radical.marksant.016865.0039' # 8k
+    session_id = 'rp.session.radical.marksant.016865.0040'#  4k
+
+    # session_id = 'mw.session.nid25429.marksant.016865.0005' 4k
+
     label = ''
 
-    #values = ['done_freq']
+    #values = ['stagein_freq']
+    #values = ['sched_freq']
     #values = ['exec_freq']
-    values = ['done_freq', 'exec_freq', 'stagein_freq', 'sched_freq', 'stageout_freq']
+    #values = ['fork_freq']
+    #values = ['exit_freq']
+    #values = ['stageout_pend_freq']
+    #values = ['stageout_freq']
+    values = ['stagein_freq', 'sched_freq', 'exec_freq', 'fork_freq', 'exit_freq', 'stageout_pend_freq', 'stageout_freq']
 
     plot(session_id, values, label, paper=False, window=1)

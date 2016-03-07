@@ -5,6 +5,8 @@ import glob
 import pandas as pd
 
 from common import PICKLE_DIR, get_ppn, get_resources, BARRIER_FONTSIZE, TITLE_FONTSIZE
+from radical.pilot import states as rps
+from radical.pilot import utils as rpu
 
 # Global Pandas settings
 pd.set_option('display.width', 180)
@@ -57,28 +59,33 @@ def plot(sids, value, label='', paper=False):
         cores = info['metadata.effective_cores']
         #cores = 32
 
-        if value == 'sched':
-            #
-            # Scheduling
-            #
-            df = unit_prof_df[
-                (unit_prof_df.cc_sched >= 0) &
-                (unit_prof_df.event == 'advance') &
-                (unit_prof_df.sid == sid)
-                ][['time', 'cc_sched']]
+        if value == 'cc_fork':
+            spec = {
+                'in': [
+                    {'info' : 'aec_start_script'}
+                ],
+                'out' : [
+                    {'info' : 'aec_after_exec'}
+                ]
+            }
+            rpu.add_concurrency (unit_prof_df, 'cc_fork', spec)
 
-        elif value == 'exec':
-            #
-            # Scheduling
-            #
-            df = unit_prof_df[
-                (unit_prof_df.cc_exec >= 0) &
-                (unit_prof_df.event == 'advance') &
-                (unit_prof_df.sid == sid)
-                ][['time', 'cc_exec']]
+        elif value == 'cc_exit':
+            spec = {
+                'in': [
+                    {'info' : 'aec_after_exec'}
+                ],
+                'out' : [
+                    {'state': rps.AGENT_STAGING_OUTPUT_PENDING, 'event': 'advance'},
+                ]
+            }
+            rpu.add_concurrency (unit_prof_df, 'cc_exit', spec)
 
-        else:
-            raise Exception("Value %s unknown" % value)
+        df = unit_prof_df[
+            (unit_prof_df[value] >= 0) &
+            #(unit_prof_df.event == 'advance') &
+            (unit_prof_df.sid == sid)
+            ][['time', value]]
 
         df.columns = ['time', cores]
         df['time'] -= df['time'].min()
@@ -105,7 +112,7 @@ def plot(sids, value, label='', paper=False):
     mp.pyplot.plot((x_ref, x_ref),(0, 1000), 'k--')
     labels.append("Optimal")
 
-    mp.pyplot.legend(labels, loc='upper right', fontsize=BARRIER_FONTSIZE, labelspacing=0)
+    mp.pyplot.legend(labels, loc='lower center', fontsize=BARRIER_FONTSIZE, labelspacing=0)
     if not paper:
         mp.pyplot.title("Concurrent number of CUs in stage '%s'.\n"
                 "%d generations of a variable number of 'concurrent' CUs of %d core(s) with a %ss payload on a variable core pilot on %s.\n"
@@ -122,7 +129,7 @@ def plot(sids, value, label='', paper=False):
     # mp.pyplot.xlim(0, 300)
     #ax.get_xaxis().set_ticks([])
 
-    mp.pyplot.savefig('plot5_%s%s.pdf' % (value, label))
+    mp.pyplot.savefig('plot_concurrency.pdf')
     mp.pyplot.close()
 
 ###############################################################################
@@ -349,11 +356,15 @@ if __name__ == '__main__':
         #'mw.session.login3.stampede.tacc.utexas.edu.marksant.016864.0002' # 100k 0s interrupted at ~75k
         #'rp.session.radical.marksant.016865.0031',
         # 'mw.session.netbook.mark.016865.0041'
-        'rp.session.radical.marksant.016865.0040', # 4k
-        'mw.session.nid25429.marksant.016865.0005' # 4k
+        # 'rp.session.radical.marksant.016865.0040', # 4k - 512s - 3gen
+
+        'mw.session.nid25429.marksant.016865.0005', # 4k - 60s - 5gen
+        'rp.session.radical.marksant.016848.0028', # 4k - 60s - 5gen
     ]
 
-    label = '_10sa_1ew'
+    label = ''
 
-    for value in ['exec']:
+    for value in ['cc_exec']:
+    #for value in ['cc_fork']:
+    # for value in ['cc_exit']:
         plot(session_ids, value, label, paper=False)

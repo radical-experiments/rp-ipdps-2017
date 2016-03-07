@@ -33,22 +33,32 @@ barrier_marker = {
     BARRIER_CLIENT_SUBMIT: '*'
 }
 BARRIER_FONTSIZE = 15
+TITLE_FONTSIZE = 8
 BARRIER_LINEWIDTH = 2
 
 resource_legend = {
     'titan': 'Titan',
     'comet': 'Comet',
-    'bw': 'Blue Waters'
+    'bw': 'Blue Waters',
+    'orte': 'ORTE',
+    'orte_lib': 'ORTE Lib',
+    'ssh': 'SSH'
 }
 resource_colors = {
     'titan': 'green',
     'comet': 'red',
-    'bw': 'blue'
+    'bw': 'blue',
+    'orte': 'green',
+    'orte_lib': 'red',
+    'ssh': 'blue'
 }
 resource_marker = {
     'titan': 'x',
     'comet': '+',
-    'bw': '*'
+    'bw': '*',
+    'orte': 'x',
+    'orte_lib': '+',
+    'ssh': '*'
 }
 
 ###############################################################################

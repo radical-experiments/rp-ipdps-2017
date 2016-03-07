@@ -192,9 +192,9 @@ def preprocess(sid):
         print cu_prof_fr['info'].unique()
 
         # transpose
+        report.info("Head of Transposed CU DF for session %s:\n" % sid)
         tr_cu_prof_fr = rpu.get_info_df(cu_prof_fr)
         tr_cu_prof_fr.insert(0, 'sid', sid)
-        report.info("Head of Transposed CU DF for session %s:\n" % sid)
         print tr_cu_prof_fr.head()
 
         report.info("Head of json Docs for session %s:\n" % sid)
