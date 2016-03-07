@@ -1,7 +1,7 @@
 import os
 import glob
 
-EXPERIMENT_DIR = '/Users/mark/sc16/experiments'
+EXPERIMENT_DIR = '/home/marksant/sc16'
 
 CLIENT_DIR = os.path.join(EXPERIMENT_DIR, 'client')
 TARGET_DIR = os.path.join(EXPERIMENT_DIR, 'data/profiling')
