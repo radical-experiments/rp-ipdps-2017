@@ -658,6 +658,7 @@ def iterate_experiment(
                                     'num_sub_agents': num_sub_agents,
                                     'num_exec_instances_per_sub_agent': num_exec_instances_per_sub_agent,
                                     'effective_cores': effective_cores,
+                                    'clone_factor': clone_factor
                                 }
                             )
 
