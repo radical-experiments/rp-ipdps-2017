@@ -6,7 +6,7 @@ import pandas as pd
 
 from common import PICKLE_DIR, get_resources,\
     BARRIER_AGENT_LAUNCH, BARRIER_CLIENT_SUBMIT, BARRIER_GENERATION,\
-    barrier_legend, barrier_colors, barrier_marker, BARRIER_FONTSIZE, BARRIER_LINEWIDTH
+    barrier_legend, barrier_colors, barrier_marker, LABEL_FONTSIZE, LEGEND_FONTSIZE, TICK_FONTSIZE, LINEWIDTH, BORDERWIDTH
 
 # Global Pandas settings
 pd.set_option('display.width', 180)
@@ -14,6 +14,13 @@ pd.set_option('io.hdf.default_format','table')
 
 import matplotlib as mp
 
+from matplotlib import rc
+rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('text', usetex=True)
+
+from matplotlib import pyplot as plt
+import numpy as np
+cmap = plt.get_cmap('jet')
 
 ###############################################################################
 #
@@ -21,6 +28,9 @@ import matplotlib as mp
 def plot(sids, paper=False):
 
     labels = []
+
+    colors = [cmap(i) for i in np.linspace(0, 1, 3)]
+    c = 0
 
     for key in sids:
 
@@ -63,10 +73,14 @@ def plot(sids, paper=False):
         orte_df = pd.DataFrame(orte_ttc)
 
         labels.append("%s" % barrier_legend[key])
-        ax = orte_df.mean().plot(kind='line', color=barrier_colors[key], marker=barrier_marker[key], fontsize=BARRIER_FONTSIZE, linewidth=BARRIER_LINEWIDTH)
+        #ax = orte_df.mean().plot(kind='line', color=colors[c], marker=barrier_marker[key], fontsize=TICK_FONTSIZE, linewidth=LINEWIDTH)
+        ax = orte_df.mean().plot(kind='line', color=colors[c], marker='+', fontsize=TICK_FONTSIZE, linewidth=LINEWIDTH)
+
+        c += 1
 
     print 'labels: %s' % labels
-    mp.pyplot.legend(labels, loc='lower left', fontsize=BARRIER_FONTSIZE)
+    legend = mp.pyplot.legend(labels, loc='upper left', fontsize=LEGEND_FONTSIZE, markerscale=0, labelspacing=0)
+    legend.get_frame().set_linewidth(BORDERWIDTH)
     if not paper:
         mp.pyplot.title("TTC for a varying number of 'concurrent' CUs.\n"
             "%d generations of a variable number of 'concurrent' CUs of %d core(s) with a %ss payload on a variable core pilot on %s.\n"
@@ -76,13 +90,28 @@ def plot(sids, paper=False):
               info['metadata.num_sub_agents'], info['metadata.num_exec_instances_per_sub_agent'],
               info['metadata.radical_stack.rp'], info['metadata.radical_stack.rs'], info['metadata.radical_stack.ru']
               ), fontsize=8)
-    mp.pyplot.xlabel("# Cores", fontsize=BARRIER_FONTSIZE)
-    mp.pyplot.ylabel("Time to Completion (s)", fontsize=BARRIER_FONTSIZE)
-    mp.pyplot.ylim(0)
+    mp.pyplot.xlabel("Pilot Cores", fontsize=LABEL_FONTSIZE)
+    #mp.pyplot.ylabel("Time to Completion (s)", fontsize=LABEL_FONTSIZE)
+    mp.pyplot.ylabel("$ttc_{a}$", fontsize=LABEL_FONTSIZE)
+    mp.pyplot.ylim(290, 550)
     #ax.get_xaxis().set_ticks([])
     #ax.get_xaxis.set
 
+    [i.set_linewidth(BORDERWIDTH) for i in ax.spines.itervalues()]
+    plt.setp(ax.yaxis.get_ticklines(), 'markeredgewidth', BORDERWIDTH)
+    plt.setp(ax.xaxis.get_ticklines(), 'markeredgewidth', BORDERWIDTH)
+
     if paper:
+        # width = 3.487
+        width = 3.3
+        # height = width / 1.618
+        height = 1.3
+        fig = mp.pyplot.gcf()
+        fig.set_size_inches(width, height)
+        # fig.subplots_adjust(left=0, right=1, top=1, bottom=1)
+
+        # fig.tight_layout(w_pad=0.0, h_pad=0.0, pad=0.1)
+        fig.tight_layout(pad=0.1)
         mp.pyplot.savefig('plot_ttc_cores_barriers.pdf')
     else:
         mp.pyplot.savefig('plot_ttc_cores_many.pdf')

@@ -4,9 +4,13 @@ import time
 import glob
 import pandas as pd
 
+from matplotlib import rc
+rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('text', usetex=True)
+
 from common import PICKLE_DIR, get_resources,\
     BARRIER_AGENT_LAUNCH, BARRIER_CLIENT_SUBMIT, BARRIER_GENERATION,\
-    resource_legend, resource_colors, resource_marker, BORDERWIDTH, LEGEND_FONTSIZE, TICK_FONTSIZE, TITLE_FONTSIZE, LABEL_FONTSIZE, LINEWIDTH
+    resource_legend, resource_colors, resource_marker, LINEWIDTH, LABEL_FONTSIZE, LEGEND_FONTSIZE, TICK_FONTSIZE, TITLE_FONTSIZE
 
 # Global Pandas settings
 pd.set_option('display.width', 180)
@@ -14,13 +18,6 @@ pd.set_option('io.hdf.default_format','table')
 
 import matplotlib as mp
 
-from matplotlib import rc
-rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
-rc('text', usetex=True)
-
-from matplotlib import pyplot as plt
-import numpy as np
-cmap = plt.get_cmap('jet')
 
 ###############################################################################
 #
@@ -51,9 +48,10 @@ def plot(sids, paper=False):
             info = session_info_df.loc[sid]
 
             cores = info['metadata.effective_cores']
+            nodes = cores / 32
 
-            if cores not in orte_ttc:
-                orte_ttc[cores] = pd.Series()
+            if nodes not in orte_ttc:
+                orte_ttc[nodes] = pd.Series()
 
             if rp:
                 # For this call assume that there is only one pilot per session
@@ -75,7 +73,7 @@ def plot(sids, paper=False):
             #tufs = tuf.sort('asic_get_u_pend')
             tufs = tuf.sort()
 
-            orte_ttc[cores] = orte_ttc[cores].append(pd.Series((tufs['aec_after_exec'].max() - tufs['asic_get_u_pend'].min())))
+            orte_ttc[nodes] = orte_ttc[nodes].append(pd.Series((tufs['aec_after_exec'].max() - tufs['asic_get_u_pend'].min())))
 
         print 'orte_ttc raw:', orte_ttc
         #print 'orte_ttc mean:', orte_ttc.mean()
@@ -87,37 +85,34 @@ def plot(sids, paper=False):
 
     # ORTE only
     # Data for BW
-    mp.pyplot.plot((128, 256, 512, 1024, 2048, 4096, 8192), (305, 309, 309, 313, 326, 351, 558), 'b-+')
+    #mp.pyplot.plot((128, 256, 512, 1024, 2048, 4096, 8192), (305, 309, 309, 313, 326, 351, 558), 'b-+')
     # Data for Stampede
-    # mp.pyplot.plot((128, 256, 512, 1024, 2048, 4096), (301, 303, 305, 311, 322, 344), 'b-+')
-    labels.append("ORTE-only (C)")
+    #mp.pyplot.plot((128, 256, 512, 1024, 2048, 4096), (301, 303, 305, 311, 322, 344), 'b-+')
+    #labels.append("ORTE-only (C)")
 
     # Horizontal reference
     y_ref = info['metadata.generations'] * info['metadata.cu_runtime']
-    ax = mp.pyplot.plot((0, 10000), (y_ref, y_ref), 'k--')
+    mp.pyplot.plot((0, 10000), (y_ref, y_ref), 'k--', linewidth=LINEWIDTH)
     labels.append("Optimal")
 
     print 'labels: %s' % labels
-    mp.pyplot.legend(labels, loc='upper left', fontsize=LEGEND_FONTSIZE)
+    location = 'upper left'
+    mp.pyplot.legend(labels, loc=location, fontsize=LEGEND_FONTSIZE, markerscale=0)
     if not paper:
-        mp.pyplot.title("TTC for a varying number of 'concurrent' CUs.\n"
+        mp.pyplot.title("TTC for a varying number of 'concurrent' Full-Node CUs.\n"
             "%d generations of a variable number of 'concurrent' CUs of %d core(s) with a %ss payload on a variable core pilot on %s.\n"
             "Constant number of %d sub-agent with %d ExecWorker(s) each.\n"
             "RP: %s - RS: %s - RU: %s"
            % (info['metadata.generations'], info['metadata.cu_cores'], info['metadata.cu_runtime'], resource_label,
               info['metadata.num_sub_agents'], info['metadata.num_exec_instances_per_sub_agent'],
               info['metadata.radical_stack.rp'], info['metadata.radical_stack.rs'], info['metadata.radical_stack.ru']
-              ), fontsize=8)
-    mp.pyplot.xlabel("\# Cores", fontsize=LABEL_FONTSIZE)
+              ), fontsize=TITLE_FONTSIZE)
+    mp.pyplot.xlabel("\# Nodes", fontsize=LABEL_FONTSIZE)
     mp.pyplot.ylabel("Time to Completion (s)", fontsize=LABEL_FONTSIZE)
     #mp.pyplot.ylim(0)
     #mp.pyplot.ylim(290, 500)
     #mp.pyplot.ylim(y_ref-10) #ax.get_xaxis().set_ticks([])
     # #ax.get_xaxis.set
-
-    # [i.set_linewidth(BORDERWIDTH) for i in ax.spines.itervalues()]
-    # plt.setp(ax.yaxis.get_ticklines(), 'markeredgewidth', BORDERWIDTH)
-    # plt.setp(ax.xaxis.get_ticklines(), 'markeredgewidth', BORDERWIDTH)
 
     #width = 3.487
     width = 3.3
@@ -129,12 +124,8 @@ def plot(sids, paper=False):
 
     #fig.tight_layout(w_pad=0.0, h_pad=0.0, pad=0.1)
     fig.tight_layout(pad=0.1)
-    #fig.tight_layout()
 
-    if paper:
-        mp.pyplot.savefig('plot_ttc_cores_resources.pdf')
-    else:
-        mp.pyplot.savefig('plot_ttc_cores_many.pdf')
+    mp.pyplot.savefig('plot_ttc_full_node.pdf')
 
     mp.pyplot.close()
 
@@ -185,29 +176,29 @@ if __name__ == '__main__':
 
 
         # # BW
-        'orte': [
-            # BW ORTE - cloned - dedicated agent node
-            "rp.session.radical.marksant.016849.0033", # 256
-            "rp.session.radical.marksant.016849.0038", # 256
-            "rp.session.radical.marksant.016849.0032", # 256
-            "rp.session.radical.marksant.016849.0034", # 256
-            "rp.session.radical.marksant.016849.0035", # 256
-            "rp.session.radical.marksant.016849.0036", # 256
-            "rp.session.radical.marksant.016849.0037", # 256
-        ],
+        # 'orte': [
+        #     # BW ORTE - cloned - dedicated agent node
+        #     "rp.session.radical.marksant.016849.0033", # 256
+        #     "rp.session.radical.marksant.016849.0038", # 256
+        #     "rp.session.radical.marksant.016849.0032", # 256
+        #     "rp.session.radical.marksant.016849.0034", # 256
+        #     "rp.session.radical.marksant.016849.0035", # 256
+        #     "rp.session.radical.marksant.016849.0036", # 256
+        #     "rp.session.radical.marksant.016849.0037", # 256
+        # ],
         #
-        'orte_lib': [
-            # BW ORTELIB - cloned
-            "rp.session.radical.marksant.016849.0025", # 32 - no dedicated agent node
-            "rp.session.radical.marksant.016849.0027", # 64 - no dedicated agent node
-            # "rp.session.radical.marksant.016849.0023", # 128
-            "rp.session.radical.marksant.016849.0024", # 256 - no dedicated agent node
-            "rp.session.radical.marksant.016849.0028", # 512 - no dedicated agent node
-            "rp.session.radical.marksant.016849.0026", # 1024 - no dedicated agent node
-            "rp.session.radical.marksant.016849.0031", # 2048 - no dedicated agent node
-            "rp.session.radical.marksant.016849.0029", # 4096 - no dedicated agent node
-            "rp.session.radical.marksant.016849.0030", # 8192 - no dedicated agent node
-        ]
+        # 'orte_lib': [
+        #     # BW ORTELIB - cloned
+        #     "rp.session.radical.marksant.016849.0025", # 32 - no dedicated agent node
+        #     "rp.session.radical.marksant.016849.0027", # 64 - no dedicated agent node
+        #     # "rp.session.radical.marksant.016849.0023", # 128
+        #     "rp.session.radical.marksant.016849.0024", # 256 - no dedicated agent node
+        #     "rp.session.radical.marksant.016849.0028", # 512 - no dedicated agent node
+        #     "rp.session.radical.marksant.016849.0026", # 1024 - no dedicated agent node
+        #     "rp.session.radical.marksant.016849.0031", # 2048 - no dedicated agent node
+        #     "rp.session.radical.marksant.016849.0029", # 4096 - no dedicated agent node
+        #     "rp.session.radical.marksant.016849.0030", # 8192 - no dedicated agent node
+        # ]
 
         # MW
         # 'orte': [
@@ -225,19 +216,62 @@ if __name__ == '__main__':
         #     "mw.session.c406-003.stampede.tacc.utexas.edu.marksant.016869.0014",
         # ]
 
-        # # FUll node BW
-        # 'aprun': [
-        #     'rp.session.radical.marksant.016926.0001',
-        #     'rp.session.radical.marksant.016926.0002',
-        #     'rp.session.radical.marksant.016926.0003',
-        #     'rp.session.radical.marksant.016926.0004',
-        #     'rp.session.radical.marksant.016926.0005',
-        #     'rp.session.radical.marksant.016926.0006',
-        #     'rp.session.radical.marksant.016926.0007',
-        #     'rp.session.radical.marksant.016926.0008',
-        #     'rp.session.radical.marksant.016926.0009',
+        # FUll node BW
+        # 'ccm': [
         #
-        # ]
+        # ],
+
+        'aprun': [
+            'rp.session.radical.marksant.016932.0001',
+            'rp.session.radical.marksant.016926.0001',
+            'rp.session.radical.marksant.016926.0002',
+            'rp.session.radical.marksant.016926.0003',
+            'rp.session.radical.marksant.016926.0004',
+            'rp.session.radical.marksant.016926.0005',
+            'rp.session.radical.marksant.016926.0006',
+            # 'rp.session.radical.marksant.016926.0007', ### outlier
+            'rp.session.radical.marksant.016926.0008',
+            'rp.session.radical.marksant.016926.0009',
+        ],
+
+        'orte': [
+            'rp.session.radical.marksant.016926.0011',
+            'rp.session.radical.marksant.016926.0012',
+            'rp.session.radical.marksant.016926.0013',
+            'rp.session.radical.marksant.016926.0014',
+            'rp.session.radical.marksant.016926.0015',
+            'rp.session.radical.marksant.016926.0016',
+            'rp.session.radical.marksant.016926.0017',
+            'rp.session.radical.marksant.016926.0018',
+            'rp.session.radical.marksant.016926.0019',
+        ],
+
+        'orte_lib': [
+            'rp.session.radical.marksant.016926.0028',
+            'rp.session.radical.marksant.016926.0027',
+            'rp.session.radical.marksant.016926.0026',
+            'rp.session.radical.marksant.016926.0025',
+            'rp.session.radical.marksant.016926.0024',
+            'rp.session.radical.marksant.016926.0023',
+            'rp.session.radical.marksant.016926.0022',
+            'rp.session.radical.marksant.016926.0021',
+            'rp.session.radical.marksant.016926.0020',
+            'rp.session.radical.marksant.016926.0019',
+        ],
+
+        'ccm': [
+            'rp.session.radical.marksant.016926.0033',
+            'rp.session.radical.marksant.016927.0001',
+            'rp.session.radical.marksant.016927.0009',
+            'rp.session.radical.marksant.016927.0008',
+            'rp.session.radical.marksant.016927.0007',
+            'rp.session.radical.marksant.016927.0006',
+            'rp.session.radical.marksant.016927.0005',
+            'rp.session.radical.marksant.016927.0004',
+            'rp.session.radical.marksant.016927.0003',
+            'rp.session.radical.marksant.016927.0002',
+        ]
+
     }
 
     plot(session_ids, paper=True)

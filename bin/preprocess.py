@@ -236,7 +236,7 @@ def preprocess_all(session_ids):
 #
 def find_sessions(json_dir):
 
-    session_paths = glob.glob('%s/rp.session.*json' % json_dir)
+    session_paths = glob.glob('%s/*.session.*json' % json_dir)
     if not session_paths:
         raise Exception("No session files found in directory %s" % json_dir)
 

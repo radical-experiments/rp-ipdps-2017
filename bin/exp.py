@@ -7,6 +7,8 @@ import os
 
 os.environ['RADICAL_SAGA_LOG_TGT'] = 'exp_saga.log'
 os.environ['RADICAL_PILOT_LOG_TGT'] = 'exp_rp.log'
+#os.environ['RADICAL_PILOT_AGENT_VERBOSE'] = 'CRITICAL'
+os.environ['RADICAL_PILOT_AGENT_VERBOSE'] = 'DEBUG'
 
 import sys
 import time
@@ -29,10 +31,15 @@ BARRIER_GENERATION='generation'
 
 # Whether and how to install new RP remotely
 RP_VERSION = "local" # debug, installed, local
+#RP_VERSION = "installed" # debug, installed, local
 VIRTENV_MODE = "create" # create, use, update
+#VIRTENV_MODE = "use" # create, use, update
 
 # Schedule CUs directly to a Pilot, assumes single Pilot
 SCHEDULER = rp.SCHED_DIRECT_SUBMISSION
+
+MICRO_EXEC = 'exec'
+MICRO_SCHED = 'sched'
 
 resource_config = {
     #
@@ -62,33 +69,36 @@ resource_config = {
     'BW_CCM': {
         'TARGET': 'local',
         'RESOURCE': 'ncsa.bw_ccm',
-        #'TASK_LAUNCH_METHOD': 'SSH',
-        'TASK_LAUNCH_METHOD': 'MPIRUN',
+        # 'TASK_LAUNCH_METHOD': 'SSH',
+        #'TASK_LAUNCH_METHOD': 'MPIRUN',
         'AGENT_SPAWNER': 'POPEN',
-        'QUEUE': 'normal', # Maximum 30 minutes
+        'QUEUE': 'normal',
+        #'QUEUE': 'debug', # Maximum 30 minutes
         'PROJECT': 'gkd',
         'PPN': 32,
-        'PRE_EXEC_PREPEND': [
-            'module use --append /u/sciteam/marksant/privatemodules',
-            'module load use.own',
-            'module load openmpi/1.8.4_ccm'
-        ]
+        # 'PRE_EXEC_PREPEND': [
+        #     'module use --append /u/sciteam/marksant/privatemodules',
+        #     'module load use.own',
+        #     'module load openmpi/1.8.4_ccm'
+        # ]
     },
     'BW_ORTELIB': {
         'RESOURCE': 'ncsa.bw_lib',
         'NETWORK_INTERFACE': 'ipogif0',
         'TASK_LAUNCH_METHOD': "ORTE_LIB",
         'MPI_LAUNCH_METHOD': "ORTE_LIB",
-        'TARGET': 'node',
+        #'TARGET': 'node',
+        'TARGET': 'local',
         'AGENT_SPAWNER': 'ORTE',
         'PROJECT': 'gkd',
-        'QUEUE': 'normal', # Maximum 30 minutes
+        'QUEUE': 'normal',
         'PPN': 32
     },
     'BW_ORTE': {
         'RESOURCE': 'ncsa.bw',
         'NETWORK_INTERFACE': 'ipogif0',
         'TASK_LAUNCH_METHOD': "ORTE",
+        #'TARGET': 'local',
         'TARGET': 'node',
         'AGENT_SPAWNER': 'POPEN',
         'PROJECT': 'gkd',
@@ -113,12 +123,12 @@ resource_config = {
     },
     'STAMPEDE_SSH': {
         'RESOURCE': 'xsede.stampede',
-        #'SCHEMA': 'local',
         #'TASK_LAUNCH_METHOD': "ORTE",
         'AGENT_SPAWNER': 'POPEN',
         'TARGET': 'local',
         #'QUEUE': 'development',
-        'QUEUE': 'normal',
+        #'QUEUE': 'normal',
+        'QUEUE': 'large',
         'PROJECT': 'TG-MCB090174', # RADICAL
         'PPN': 16,
         'PRE_EXEC_PREPEND': [
@@ -141,8 +151,10 @@ resource_config = {
         'RESOURCE': 'xsede.stampede_ortelib',
         #'SCHEMA': 'local',
         'TARGET': 'local',
+        #'TARGET': 'node',
         #'QUEUE': 'development',
-        'QUEUE': 'normal',
+        #'QUEUE': 'normal',
+        'QUEUE': 'large',
         'PROJECT': 'TG-MCB090174', # RADICAL
         'PPN': 16,
         'PRE_EXEC_PREPEND': [
@@ -228,7 +240,7 @@ def wait_queue_size_cb(umgr, wait_queue_size):
 
 
 def construct_agent_config(num_sub_agents, num_exec_instances_per_sub_agent,
-        target, network_interface=None, clone_factor=1):
+        target, network_interface=None, clone_factor=1, micro=None):
 
     config = {
 
@@ -254,7 +266,7 @@ def construct_agent_config(num_sub_agents, num_exec_instances_per_sub_agent,
         # "1" will leave the units unchanged.  Any blowup will leave on unit as the
         # original, and will then create clones with an changed unit ID (see blowup()).
         "clone" : {
-            "AgentWorker"                 : {"input" : 1, "output" : clone_factor},
+            "AgentWorker"                 : {"input" : 1, "output" : 1},
             "AgentStagingInputComponent"  : {"input" : 1, "output" : 1},
             "AgentSchedulingComponent"    : {"input" : 1, "output" : 1},
             "AgentExecutingComponent"     : {"input" : 1, "output" : 1},
@@ -272,13 +284,25 @@ def construct_agent_config(num_sub_agents, num_exec_instances_per_sub_agent,
             "AgentStagingInputComponent"  : {"input" : 0, "output" : 0},
             "AgentSchedulingComponent"    : {"input" : 0, "output" : 0},
             "AgentExecutingComponent"     : {"input" : 0, "output" : 0},
-            "AgentStagingOutputComponent" : {"input" : 0, "output" : 1}
+            "AgentStagingOutputComponent" : {"input" : 0, "output" : 0}
         }
     }
 
+    if not micro:
+        config["clone"]["AgentWorker"]["output"] = clone_factor
+        config["drop"]["AgentStagingOutputComponent"]["output"] = 1
+    elif micro == MICRO_EXEC:
+        config["clone"]["AgentSchedulingComponent"]["output"] = clone_factor
+        config["drop"]["AgentExecutingComponent"]["output"] = 1
+    elif micro == MICRO_SCHED:
+        config["clone"]["AgentStagingInputComponent"]["output"] = clone_factor
+        config["drop"]["AgentSchedulingComponent"]["output"] = 1
+    else:
+        raise("ERROR: Micro benchmark '%s' not recognized!" % micro)
+
     # interface for binding zmq to
     if network_interface:
-        config["network_interface"] = "ipogif0"
+        config["network_interface"] = network_interface
 
     layout =  {
         "agent_0"   : {
@@ -331,7 +355,9 @@ def construct_agent_config(num_sub_agents, num_exec_instances_per_sub_agent,
 
 #------------------------------------------------------------------------------
 #
-def run_experiment(backend, pilot_cores, pilot_runtime, cu_runtime, cu_cores, cu_count, generations, cu_mpi, profiling, agent_config, cancel_on_all_started=False, barriers=[], metadata=None):
+def run_experiment(backend, pilot_cores, pilot_runtime, cu_runtime, cu_cores,
+        cu_count, generations, cu_mpi, profiling, agent_config,
+        cancel_on_all_started=False, barriers=[], gen_bar_wait=0, metadata=None):
 
     # Profiling
     if profiling:
@@ -466,16 +492,24 @@ def run_experiment(backend, pilot_cores, pilot_runtime, cu_runtime, cu_cores, cu
             # This barrier waits with starting the agent until all units have
             # reached the database.
             if BARRIER_AGENT_LAUNCH in barriers:
-                umgr.wait_units(state=rp.AGENT_STAGING_INPUT_PENDING)
-                tmp_fd, tmp_name = tempfile.mkstemp()
-                os.close(tmp_fd)
-                sd_pilot = {
-                    'source': 'file://%s' % tmp_name,
-                    'target': 'staging:///%s' % 'start_barrier',
-                    'action': rp.TRANSFER
-                }
-                pilot.stage_in(sd_pilot)
-                os.remove(tmp_name)
+
+                # Only wait for the first generation
+                if BARRIER_GENERATION in barriers and generation > 0:
+                    report.info("Skipping file creation for agent barrier for generation %d ...\n" % generation)
+
+                else:
+                    report.info("Creating file for agent barrier ...\n")
+
+                    umgr.wait_units(state=rp.AGENT_STAGING_INPUT_PENDING)
+                    tmp_fd, tmp_name = tempfile.mkstemp()
+                    os.close(tmp_fd)
+                    sd_pilot = {
+                        'source': 'file://%s' % tmp_name,
+                        'target': 'staging:///%s' % 'start_barrier',
+                        'action': rp.TRANSFER
+                    }
+                    pilot.stage_in(sd_pilot)
+                    os.remove(tmp_name)
 
             # If we are only interested in startup times, we can cancel once that
             # has been achieved, which might save us some cpu hours.
@@ -483,20 +517,29 @@ def run_experiment(backend, pilot_cores, pilot_runtime, cu_runtime, cu_cores, cu
                 wait_states = [rp.EXECUTING, rp.DONE, rp.FAILED, rp.CANCELED]
             else:
                 wait_states = [rp.DONE, rp.FAILED, rp.CANCELED]
+            report.info("Waiting for %d units ...\n" % len(units))
             umgr.wait_units(unit_ids=[cu.uid for cu in units], state=wait_states)
+            # TODO: should only wait for this generation
 
             for cu in units:
-                report.plain("* Task %s state %s, exit code: %s, started: %s, finished: %s" \
+                report.plain("* Task %s state %s, exit code: %s, started: %s, finished: %s\n" \
                     % (cu.uid, cu.state, cu.exit_code, cu.start_time, cu.stop_time))
+
+            # Sleep between generations
+            if BARRIER_GENERATION in barriers and generation < generations-1:
+                report.info("Waiting for %d seconds between generations ...\n" % gen_bar_wait)
+                time.sleep(gen_bar_wait)
 
             # reset list for next generation
             cuds = []
 
 
     except rp.PilotException as e:
+        report.error("need to exit now: %s\n" % e)
         session._logger.exception("Caught a Pilot Exception, cleaning up ...")
 
     except Exception as e:
+        report.error("need to exit now: %s\n" % e)
         session._logger.exception("caught exception")
         raise
 
@@ -535,7 +578,9 @@ def iterate_experiment(
         repetitions=1,
         exclusive_agent_nodes=True,
         barriers=[],
+        gen_bar_wait=0, # Wait N seconds between generations
         clone=False,
+        micro=None,
         cu_cores_var=[1], # Number of cores per CU to iterate over
         cu_duration_var=[0], # Duration of the payload
         cancel_on_all_started=False, # Quit once everything is started.
@@ -557,6 +602,10 @@ def iterate_experiment(
     # and might therefore mean a misunderstanding.
     if generations > 1 and cancel_on_all_started:
         raise Exception("cancel_on_all_started not supported for multiple generations")
+
+    # Cloning and Micro Benchmarks are not compatible
+    if clone and micro:
+        raise Exception("Cloning and Micro Benchmarks are not Compatible")
 
     # Shuffle some of the input parameters for statistical sanity
     random.shuffle(cu_cores_var)
@@ -620,7 +669,7 @@ def iterate_experiment(
                                 cu_duration = 60 + cus_per_gen / num_sub_agents
                                 report.warn("CU_DURATION GUESSTIMATED at %d seconds.\n" % cu_duration)
                             # Clone
-                            if clone:
+                            if clone or micro:
                                 clone_factor = this_cu_count
                                 this_cu_count = 1
                             else:
@@ -632,14 +681,15 @@ def iterate_experiment(
                                 num_exec_instances_per_sub_agent=num_exec_instances_per_sub_agent,
                                 target=resource_config[backend]['TARGET'],
                                 network_interface=resource_config[backend].get('NETWORK_INTERFACE'),
-                                clone_factor=clone_factor
+                                clone_factor=clone_factor,
+                                micro=micro
                             )
-
 
                             # Fire!!
                             sid, meta = run_experiment(
                                 backend=backend,
                                 barriers=barriers,
+                                gen_bar_wait=gen_bar_wait,
                                 pilot_cores=pilot_cores,
                                 pilot_runtime=pilot_runtime,
                                 cu_runtime=cu_duration,
@@ -658,7 +708,9 @@ def iterate_experiment(
                                     'num_sub_agents': num_sub_agents,
                                     'num_exec_instances_per_sub_agent': num_exec_instances_per_sub_agent,
                                     'effective_cores': effective_cores,
-                                    'clone_factor': clone_factor
+                                    'clone_factor': clone_factor,
+                                    'target': resource_config[backend]['TARGET'],
+                                    'micro': micro
                                 }
                             )
 
@@ -1155,6 +1207,169 @@ def exp10(backend):
 #
 #-------------------------------------------------------------------------------
 
+
+#-------------------------------------------------------------------------------
+#
+# Single resource experiment.
+#
+# Goal: determine degree of scaling with adding execworkers/sub-agents
+#
+# I think scaling with exec workers, and specifically to what problem size
+# this behaves kinda linear and also that this scaling is independent
+# from CU size (scalar / mpi)
+#
+def expA(backend):
+
+    sessions = iterate_experiment(
+        pilot_runtime=15,
+        backend=backend,
+        label=inspect.currentframe().f_code.co_name,
+        repetitions=1,
+        generations=3,
+        clone=True,
+        barriers=[BARRIER_AGENT_LAUNCH],
+        # barriers=[BARRIER_AGENT_LAUNCH, BARRIER_GENERATION],
+        #gen_bar_wait=10,
+        cu_duration_var=[64],
+        num_sub_agents_var=[1], # Number of sub-agents to iterate over
+        exclusive_agent_nodes=False,
+        num_exec_instances_per_sub_agent_var=[1],
+        nodes_var=[128, 256] # The number of nodes to allocate for running CUs
+    )
+    return sessions
+#
+#-------------------------------------------------------------------------------
+
+
+#-------------------------------------------------------------------------------
+#
+# Resource efficiency
+#
+def expB(backend):
+
+    sessions = iterate_experiment(
+        pilot_runtime=15,
+        backend=backend,
+        label=inspect.currentframe().f_code.co_name,
+        repetitions=1,
+        generations=3,
+        clone=True,
+        barriers=[BARRIER_AGENT_LAUNCH],
+        cu_duration_var=[4],
+        num_sub_agents_var=[1], # Number of sub-agents to iterate over
+        exclusive_agent_nodes=False,
+        cu_cores_var=[1],
+        num_exec_instances_per_sub_agent_var=[1],
+        nodes_var=[1,2,4,8,16,32] # The number of nodes to allocate for running CUs
+    )
+    return sessions
+#
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+#
+# CUG full node experiments on BW
+#
+def expC(backend):
+
+    sessions = iterate_experiment(
+        pilot_runtime=15,
+        backend=backend,
+        label=inspect.currentframe().f_code.co_name,
+        repetitions=1,
+        generations=3,
+        clone=True,
+        barriers=[BARRIER_AGENT_LAUNCH],
+        cu_duration_var=[64],
+        num_sub_agents_var=[1], # Number of sub-agents to iterate over
+        exclusive_agent_nodes=False,
+        cu_cores_var=[32],
+        num_exec_instances_per_sub_agent_var=[1],
+        nodes_var=[32] # The number of nodes to allocate for running CUs
+        #nodes_var=[2] # The number of nodes to allocate for running CUs
+    )
+    return sessions
+#
+#-------------------------------------------------------------------------------
+
+
+#-------------------------------------------------------------------------------
+#
+# Microbenchmark executing with varying sub-agents
+#
+def expD(backend):
+
+    sessions = iterate_experiment(
+        pilot_runtime=15,
+        backend=backend,
+        label=inspect.currentframe().f_code.co_name,
+        repetitions=1,
+        generations=1,
+        micro=MICRO_EXEC,
+        barriers=[BARRIER_AGENT_LAUNCH],
+        cu_duration_var=[300],
+        num_sub_agents_var=[1,2,4,8], # Number of sub-agents to iterate over
+        #num_sub_agents_var=[16], # Number of sub-agents to iterate over
+        exclusive_agent_nodes=True,
+        cu_cores_var=[1],
+        num_exec_instances_per_sub_agent_var=[1],
+        #nodes_var=[1,2,4,8,16,32,64,128,256] # The number of nodes to allocate for running CUs
+        nodes_var=[128] # The number of nodes to allocate for running CUs
+    )
+    return sessions
+#
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+#
+# Microbenchmark executing with varying sub-agents
+#
+def expE(backend):
+
+    sessions = iterate_experiment(
+        pilot_runtime=15,
+        backend=backend,
+        label=inspect.currentframe().f_code.co_name,
+        repetitions=1,
+        generations=1,
+        micro=MICRO_EXEC,
+        barriers=[BARRIER_AGENT_LAUNCH],
+        cu_duration_var=[0],
+        num_sub_agents_var=[1], # Number of sub-agents to iterate over
+        num_exec_instances_per_sub_agent_var=[1,2,4,8,16],
+        exclusive_agent_nodes=False,
+        cu_cores_var=[1],
+        #nodes_var=[1,2,4,8,16,32,64,128,256] # The number of nodes to allocate for running CUs
+        nodes_var=[128] # The number of nodes to allocate for running CUs
+    )
+    return sessions
+#
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+#
+# Microbenchmark executing with varying sub-agents
+#
+def expF(backend):
+
+    sessions = iterate_experiment(
+        pilot_runtime=15,
+        backend=backend,
+        label=inspect.currentframe().f_code.co_name,
+        repetitions=1,
+        generations=1,
+        micro=MICRO_EXEC,
+        barriers=[BARRIER_AGENT_LAUNCH],
+        cu_duration_var=[512],
+        num_sub_agents_var=[1], # Number of sub-agents to iterate over
+        num_exec_instances_per_sub_agent_var=[4],
+        exclusive_agent_nodes=False,
+        cu_cores_var=[1],
+        nodes_var=[512] # The number of nodes to allocate for running CUs
+    )
+    return sessions
+#
+#-------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
 #

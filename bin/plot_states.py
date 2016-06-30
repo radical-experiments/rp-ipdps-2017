@@ -45,8 +45,22 @@ def plot(tr_unit_prof_df, info_df, unit_info_df, pilot_info_df, sid):
     # Get only the entries for this session
     uf = unit_info_df[unit_info_df['sid'] == sid]
 
-    result = pd.value_counts(uf['state'].values, sort=False)
+    # Get only the entries for this session
+    tuf = tr_unit_prof_df[tr_unit_prof_df['sid'] == sid]
+
+    result = pd.value_counts(tuf['aec_complete'].notnull(), sort=False)
+
+    # result = pd.value_counts(uf['state'].values, sort=False)
     print result
+
+    # Only take completed CUs into account
+    #tuf = tuf[tuf['Done'].notnull()]
+
+    #print tuf['aec_after_exec']
+    #print tuf['aec_complete']
+
+
+    #print 'c:', c
 
     ax = result.plot(kind='pie', autopct='%.2f%%')
     ax.set_aspect('equal')

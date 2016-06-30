@@ -18,9 +18,9 @@ BARRIER_AGENT_LAUNCH= 'barrier_agent_launch'
 BARRIER_CLIENT_SUBMIT='barrier_client_submit'
 BARRIER_GENERATION='barrier_generation'
 barrier_legend = {
-    BARRIER_AGENT_LAUNCH: 'Pilot Barrier',
-    BARRIER_GENERATION: 'Generation Barrier',
-    BARRIER_CLIENT_SUBMIT: 'Client Barrier'
+    BARRIER_AGENT_LAUNCH: 'Agent-barrier',
+    BARRIER_GENERATION: 'Generation-barrier',
+    BARRIER_CLIENT_SUBMIT: 'Application-barrier'
 }
 barrier_colors = {
     BARRIER_AGENT_LAUNCH: 'green',
@@ -32,17 +32,24 @@ barrier_marker = {
     BARRIER_GENERATION: '+',
     BARRIER_CLIENT_SUBMIT: '*'
 }
-BARRIER_FONTSIZE = 15
-TITLE_FONTSIZE = 8
-BARRIER_LINEWIDTH = 2
+BARRIER_FONTSIZE = 6
+LEGEND_FONTSIZE = 6
+TICK_FONTSIZE = 6
+LABEL_FONTSIZE = 9
+TITLE_FONTSIZE = 4
+BARRIER_LINEWIDTH = 2.0
+LINEWIDTH = 0.5
+BORDERWIDTH = 0.5
 
 resource_legend = {
     'titan': 'Titan',
     'comet': 'Comet',
     'bw': 'Blue Waters',
-    'orte': 'ORTE',
-    'orte_lib': 'ORTE Lib',
-    'ssh': 'SSH'
+    'orte': 'ORTE CLI',
+    'orte_lib': 'ORTE LIB',
+    'ssh': 'SSH',
+    'aprun': 'ALPS',
+    'ccm': 'CCM'
 }
 resource_colors = {
     'titan': 'green',
@@ -50,15 +57,20 @@ resource_colors = {
     'bw': 'blue',
     'orte': 'green',
     'orte_lib': 'red',
-    'ssh': 'blue'
+    'ssh': 'blue',
+    'aprun': 'orange',
+    'ccm': 'blue',
 }
 resource_marker = {
     'titan': 'x',
     'comet': '+',
     'bw': '*',
-    'orte': 'x',
+    'orte': '+',
     'orte_lib': '+',
-    'ssh': '*'
+    'ssh': '*',
+    'aprun': '+',
+    'ccm': '+'
+
 }
 
 ###############################################################################

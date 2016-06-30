@@ -27,14 +27,14 @@ def collect(sid):
     elif 'rp.session.ip-10-184-31-85.santcroos' in sid:
         client_dir = 'sftp://ec2-107-21-218-167.compute-1.amazonaws.com/home/santcroos/experiments/ccgrid16/client'
 
-    elif 'rp.session.radical.marksant' in sid:
-        client_dir = 'sftp://radserv/home/marksant/sc16/client'
+    # elif 'rp.session.radical.marksant' in sid:
+    #     client_dir = 'sftp://radserv/home/marksant/sc16/client'
 
     elif 'mw.session.netbook.mark' in sid:
         client_dir = '/Users/mark/proj/openmpi/mysubmit/client'
 
     elif 'mw.session' in sid and 'stampede.tacc.utexas.edu.marksant' in sid:
-        client_dir = 'sftp://stampede/home1/01740/marksant/mysubmit'
+        client_dir = 'sftp://stampede/work/01740/marksant/client'
 
     elif 'mw.session.h2ologin' in sid or 'mw.session.nid' in sid:
         client_dir = 'gsisftp://bw/u/sciteam/marksant/mysubmit/client'
@@ -52,7 +52,10 @@ def collect(sid):
 def collect_all(sessions_to_fetch):
 
     for sid in sessions_to_fetch:
-        collect(sid)
+        try:
+            collect(sid)
+        except Exception as e:
+            report.error("Collection of info for %s failed" % sid)
 
 
 ###############################################################################

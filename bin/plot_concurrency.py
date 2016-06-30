@@ -4,7 +4,7 @@ import time
 import glob
 import pandas as pd
 
-from common import PICKLE_DIR, get_ppn, get_resources, BARRIER_FONTSIZE, TITLE_FONTSIZE
+from common import PICKLE_DIR, get_ppn, get_resources, LEGEND_FONTSIZE, TITLE_FONTSIZE, TICK_FONTSIZE, LABEL_FONTSIZE, LINEWIDTH, BORDERWIDTH
 from radical.pilot import states as rps
 from radical.pilot import utils as rpu
 
@@ -14,12 +14,20 @@ pd.set_option('io.hdf.default_format','table')
 
 import matplotlib as mp
 
+from matplotlib import rc
+rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('text', usetex=True)
+
+from matplotlib import pyplot as plt
+import numpy as np
+cmap = plt.get_cmap('jet')
 
 ###############################################################################
 #
 # TODO: add concurrent CUs on right axis
 def plot(sids, value, label='', paper=False):
 
+    colors = [cmap(i) for i in np.linspace(0, 1, len(sids))]
 
     labels = []
 
@@ -96,8 +104,10 @@ def plot(sids, value, label='', paper=False):
             df_all = pd.merge(df_all, df,  on='time', how='outer')
 
         #labels.append("Cores: %d" % cores)
-        #labels.append("%d" % cores)
-        labels.append("%d - %s" % (cores, 'RP' if rp else 'ORTE'))
+        # labels.append("%d" % cores)
+        #labels.append("%d - %s" % (cores, 'RP' if rp else 'ORTE'))
+        #labels.append(sid[-4:])
+        labels.append("%d" % info['metadata.cu_runtime'])
 
         first = False
 
@@ -105,14 +115,18 @@ def plot(sids, value, label='', paper=False):
     print df_all.head()
     #df_all.plot(colormap='Paired')
     #df_all.plot(drawstyle='steps-post')
-    df_all.plot(drawstyle='steps')
+    #ax = df_all.plot(drawstyle='steps-pre', fontsize=TICK_FONTSIZE, linewidth=LINEWIDTH, colors=colors)
+    ax = df_all.plot(fontsize=TICK_FONTSIZE, linewidth=LINEWIDTH, colors=colors)
 
     # Vertial reference
-    x_ref = info['metadata.generations'] * info['metadata.cu_runtime']
-    mp.pyplot.plot((x_ref, x_ref),(0, 1000), 'k--')
-    labels.append("Optimal")
+    #x_ref = info['metadata.generations'] * info['metadata.cu_runtime']
+    #mp.pyplot.plot((x_ref, x_ref),(0, 1000), 'k--')
+    #labels.append("Optimal")
 
-    mp.pyplot.legend(labels, loc='lower center', fontsize=BARRIER_FONTSIZE, labelspacing=0)
+    location = 'upper right'
+    legend = mp.pyplot.legend(labels, loc=location, fontsize=LEGEND_FONTSIZE, labelspacing=0)
+    legend.get_frame().set_linewidth(BORDERWIDTH)
+
     if not paper:
         mp.pyplot.title("Concurrent number of CUs in stage '%s'.\n"
                 "%d generations of a variable number of 'concurrent' CUs of %d core(s) with a %ss payload on a variable core pilot on %s.\n"
@@ -123,11 +137,28 @@ def plot(sids, value, label='', paper=False):
                   info['metadata.num_sub_agents'], info['metadata.num_exec_instances_per_sub_agent'],
                   info['metadata.radical_stack.rp'], info['metadata.radical_stack.rs'], info['metadata.radical_stack.ru']
                   ), fontsize=TITLE_FONTSIZE)
-    mp.pyplot.xlabel("Time (s)", fontsize=BARRIER_FONTSIZE)
-    mp.pyplot.ylabel("# Concurrent Compute Units", fontsize=BARRIER_FONTSIZE)
+    mp.pyplot.xlabel("Time (s)", fontsize=LABEL_FONTSIZE)
+    mp.pyplot.ylabel("\# Concurrent Units", fontsize=LABEL_FONTSIZE)
     # mp.pyplot.ylim(0, 200)
-    # mp.pyplot.xlim(0, 300)
+    mp.pyplot.ylim(-50,)
+    mp.pyplot.xlim(0, 600)
     #ax.get_xaxis().set_ticks([])
+    print dir(ax)
+
+    [i.set_linewidth(BORDERWIDTH) for i in ax.spines.itervalues()]
+    plt.setp(ax.yaxis.get_ticklines(), 'markeredgewidth', BORDERWIDTH)
+    plt.setp(ax.xaxis.get_ticklines(), 'markeredgewidth', BORDERWIDTH)
+
+    # width = 3.487
+    width = 3.3
+    height = width / 1.618
+    # height = 2.5
+    fig = mp.pyplot.gcf()
+    fig.set_size_inches(width, height)
+    # fig.subplots_adjust(left=0, right=1, top=1, bottom=1)
+
+    # fig.tight_layout(w_pad=0.0, h_pad=0.0, pad=0.1)
+    fig.tight_layout(pad=0.1)
 
     mp.pyplot.savefig('plot_concurrency.pdf')
     mp.pyplot.close()
@@ -203,7 +234,7 @@ if __name__ == '__main__':
         # "rp.session.radical.marksant.016849.0007", # 2048
         # "rp.session.radical.marksant.016849.0008", # 4096
 
-        # BW ORTELIB - cloned
+        # BW ORTELIB - cloned ### INITIAL CUG PAPER DATA ###
         # "rp.session.radical.marksant.016849.0025", # 32 - no dedicated agent node
         # "rp.session.radical.marksant.016849.0027", # 64 - no dedicated agent node
         # "rp.session.radical.marksant.016849.0023", # 128
@@ -358,13 +389,94 @@ if __name__ == '__main__':
         # 'mw.session.netbook.mark.016865.0041'
         # 'rp.session.radical.marksant.016865.0040', # 4k - 512s - 3gen
 
-        'mw.session.nid25429.marksant.016865.0005', # 4k - 60s - 5gen
-        'rp.session.radical.marksant.016848.0028', # 4k - 60s - 5gen
+        # 'mw.session.nid25429.marksant.016865.0005', # 4k - 60s - 5gen
+        # 'rp.session.radical.marksant.016848.0028', # 4k - 60s - 5gen
+
+        #'rp.session.radical.marksant.016865.0040', # 4k - 512s - 3 gen
+        # 'rp.session.radical.marksant.016865.0002', # 4k - 64s - 3 gen
+
+        # 'rp.session.radical.marksant.016868.0011', # 4k - 64s - 3 gen
+        # 'rp.session.radical.marksant.016869.0000', # 4k - 64s - 3 gen
+
+
+        # "rp.session.radical.marksant.016868.0016",
+        # "rp.session.radical.marksant.016868.0013",
+        # "rp.session.radical.marksant.016868.0015",
+        # "rp.session.radical.marksant.016868.0012",
+
+        # 'rp.session.radical.marksant.016865.0039' # 8k
+
+        # 'rp.session.radical.marksant.016864.0062',
+        # 'rp.session.radical.marksant.016865.0000',
+        # 'rp.session.radical.marksant.016865.0001',
+        # 'rp.session.radical.marksant.016865.0002',
+        # 'rp.session.radical.marksant.016865.0003',
+        # 'rp.session.radical.marksant.016865.0004',
+        # 'rp.session.radical.marksant.016865.0006',
+        # 'rp.session.radical.marksant.016865.0007',
+        # 'rp.session.radical.marksant.016865.0008',
+        # 'rp.session.radical.marksant.016865.0040',
+
+        # "mw.session.nid25337.marksant.016869.0007", # bw 4k - 3gen x 64s - no barrier
+        # "mw.session.nid25337.marksant.016869.0008", # bw 4k - 3gen x 128s - no barrier
+        # "mw.session.nid25337.marksant.016869.0010", # bw 4k - 1gen x 64s - no barrier
+
+        # "rp.session.radical.marksant.016870.0004"
+
+        # "mw.session.c406-003.stampede.tacc.utexas.edu.marksant.016869.0006", # 64s
+        # "mw.session.c406-003.stampede.tacc.utexas.edu.marksant.016869.0007", # 64s 3 gens
+        # "mw.session.c406-003.stampede.tacc.utexas.edu.marksant.016869.0008", # 32s
+        # "mw.session.c406-003.stampede.tacc.utexas.edu.marksant.016869.0009", # 16s
+        # "mw.session.c406-003.stampede.tacc.utexas.edu.marksant.016869.0010", # 8s
+        # "mw.session.c406-003.stampede.tacc.utexas.edu.marksant.016869.0011", # 4s
+        # "mw.session.c406-003.stampede.tacc.utexas.edu.marksant.016869.0012", # 2s
+        # "mw.session.c406-003.stampede.tacc.utexas.edu.marksant.016869.0013", # 1s
+        # "mw.session.c406-003.stampede.tacc.utexas.edu.marksant.016869.0014", # 0s
+
+        # 'mw.session.nid25254.marksant.016869.0011',
+        # 'mw.session.nid25254.marksant.016869.0012',
+        # 'mw.session.nid25254.marksant.016869.0013',
+        # 'mw.session.nid25254.marksant.016869.0014',
+        # 'mw.session.nid25254.marksant.016869.0015',
+        # 'mw.session.nid25254.marksant.016869.0016',
+        # 'mw.session.nid25254.marksant.016869.0017',
+
+        # Stampede SSH
+        # 'rp.session.radical.marksant.016895.0000', # 16
+        # 'rp.session.radical.marksant.016895.0005', # 32
+        # 'rp.session.radical.marksant.016895.0003', # 64
+        # 'rp.session.radical.marksant.016895.0004', # 256
+        # 'rp.session.radical.marksant.016884.0040', # 512
+        # 'rp.session.radical.marksant.016884.0058', # 128
+        # 'rp.session.radical.marksant.016884.0022', # 1024
+        # 'rp.session.radical.marksant.016895.0001', # 2048
+        # 'rp.session.radical.marksant.016895.0006', # 4096
+        # 'rp.session.radical.marksant.016895.0007', # 8192
+
+        # BW SCALING micro
+        # 'rp.session.radical.marksant.016929.0006', # 8k, 128s
+        # 'rp.session.radical.marksant.016928.0003', # 32k, 1024s
+        # # 'rp.session.radical.marksant.016928.0000', # 8k, 512s
+        # 'rp.session.radical.marksant.016928.0002', # 16k, 512s
+        # # 'rp.session.radical.marksant.016928.0001', # 32k
+        # 'rp.session.radical.marksant.016928.0004', # 64k, 2048s
+
+        'rp.session.radical.marksant.016927.0012', # 2 SA  ### PAPER UNIT DURATION PLOT ###
+        'rp.session.radical.marksant.016927.0017', # 2 SA  ### PAPER UNIT DURATION PLOT ###
+
+        # BW SCALING AGENT
+        # 'rp.session.radical.marksant.016929.0001', # 2k
+        # 'rp.session.radical.marksant.016929.0000', # 4k
+        # # 'rp.session.radical.marksant.016929.0002', # 8k, too short
+        # 'rp.session.radical.marksant.016929.0007', # 8k
+        # 'rp.session.radical.marksant.016930.0000', # 16k
     ]
+
+
 
     label = ''
 
     for value in ['cc_exec']:
     #for value in ['cc_fork']:
     # for value in ['cc_exit']:
-        plot(session_ids, value, label, paper=False)
+        plot(session_ids, value, label, paper=True)
