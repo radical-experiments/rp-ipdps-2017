@@ -1,7 +1,7 @@
 import os
 import glob
 
-EXPERIMENT_DIR = '/home/marksant/sc16'
+EXPERIMENT_DIR = '/home/marksant/ipdps2017'
 
 CLIENT_DIR = os.path.join(EXPERIMENT_DIR, 'client')
 TARGET_DIR = os.path.join(EXPERIMENT_DIR, 'data/profiling')
