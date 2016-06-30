@@ -9,6 +9,8 @@ os.environ['RADICAL_SAGA_LOG_TGT'] = 'exp_saga.log'
 os.environ['RADICAL_PILOT_LOG_TGT'] = 'exp_rp.log'
 #os.environ['RADICAL_PILOT_AGENT_VERBOSE'] = 'CRITICAL'
 os.environ['RADICAL_PILOT_AGENT_VERBOSE'] = 'DEBUG'
+os.environ['RADICAL_PILOT_VERBOSE'] = 'DEBUG'
+os.environ['RADICAL_SAGA_VERBOSE'] = 'DEBUG'
 
 import sys
 import time
