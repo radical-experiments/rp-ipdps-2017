@@ -14,6 +14,7 @@ os.environ['RADICAL_SAGA_VERBOSE'] = 'DEBUG'
 
 import sys
 import time
+import math
 import radical.pilot as rp
 import random
 import pprint
@@ -586,12 +587,12 @@ def iterate_experiment(
         cu_cores_var=[1], # Number of cores per CU to iterate over
         cu_duration_var=[0], # Duration of the payload
         cancel_on_all_started=False, # Quit once everything is started.
-        cu_count=None, # By default calculate the number of cores based on cores
+        cu_count_var=[None], # By default calculate the number of cores based on cores
         cu_mpi=False, # Which launch method to use
         generations=1, # Multiple the number of
         num_sub_agents_var=[1], # Number of sub-agents to iterate over
         num_exec_instances_per_sub_agent_var=[1], # Number of workers per sub-agent to iterate over
-        nodes_var=[1], # The number of nodes to allocate for running CUs
+        nodes_var=[None], # The number of nodes to allocate for running CUs
         sort_nodes_var=True,
         skip_few_nodes=False, # skip if nodes < cu_cores
         pilot_runtime=30, # Maximum walltime for experiment TODO: guesstimate?
@@ -614,6 +615,7 @@ def iterate_experiment(
     random.shuffle(cu_duration_var)
     random.shuffle(num_sub_agents_var)
     random.shuffle(num_exec_instances_per_sub_agent_var)
+    random.shuffle(cu_count_var)
 
     # Allows to skip sorting the number of nodes,
     # so that the smallest pilots runs first.
@@ -625,103 +627,115 @@ def iterate_experiment(
 
     for iter in range(repetitions):
 
-        for nodes in nodes_var:
+        for cu_count in cu_count_var:
 
-            for cu_cores in cu_cores_var:
+            for nodes in nodes_var:
 
-                # Allow to specify FULL node, that translates into the PPN
-                if cu_cores == 'FULL':
-                    cu_cores = int(resource_config[backend]['PPN'])
+                if not nodes:
+                    if not cu_count:
+                        raise Exception("Both cu_count and nodes not specified.")
 
-                for num_sub_agents in num_sub_agents_var:
+                    if generations != 1:
+                        raise Exception("We dont do generations and derived nodes.")
 
-                    for num_exec_instances_per_sub_agent in num_exec_instances_per_sub_agent_var:
+                    nodes = int(math.ceil(float(cu_count) / resource_config[backend]['PPN']))
+                    report.info("Nodes not specified, deriving from cu_count (%d) resulting in %d nodes." % (cu_count, nodes))
 
-                        if exclusive_agent_nodes:
-                            # Allocate some extra nodes for the sub-agents
-                            pilot_nodes = nodes + num_sub_agents
-                        else:
-                            # "steal" from the nodes that are available for CUs
-                            pilot_nodes = nodes
+                for cu_cores in cu_cores_var:
 
-                        for cu_duration in cu_duration_var:
+                    # Allow to specify FULL node, that translates into the PPN
+                    if cu_cores == 'FULL':
+                        cu_cores = int(resource_config[backend]['PPN'])
 
-                            # Pilot Desc takes cores, so we translate from nodes here
-                            pilot_cores = int(resource_config[backend]['PPN']) * pilot_nodes
+                    for num_sub_agents in num_sub_agents_var:
 
-                            # Number of cores available for CUs
-                            effective_cores = int(resource_config[backend]['PPN']) * nodes
+                        for num_exec_instances_per_sub_agent in num_exec_instances_per_sub_agent_var:
 
-                            # Don't need full node experiments for low number of nodes,
-                            # as we have no equivalent in single core experiments
-                            if skip_few_nodes and nodes < cu_cores:
-                                continue
-
-
-                            # Check if fixed cu_count was specified
-                            # Note: make a copy because of the loop
-                            if cu_count:
-                                this_cu_count = cu_count
+                            if exclusive_agent_nodes:
+                                # Allocate some extra nodes for the sub-agents
+                                pilot_nodes = nodes + num_sub_agents
                             else:
-                                # keep core consumption equal
-                                this_cu_count = effective_cores / cu_cores
+                                # "steal" from the nodes that are available for CUs
+                                pilot_nodes = nodes
 
-                            if cu_duration == 'GUESSTIMATE':
-                                cus_per_gen = effective_cores / cu_cores
-                                cu_duration = 60 + cus_per_gen / num_sub_agents
-                                report.warn("CU_DURATION GUESSTIMATED at %d seconds.\n" % cu_duration)
-                            # Clone
-                            if clone or micro:
-                                clone_factor = this_cu_count
-                                this_cu_count = 1
-                            else:
-                                clone_factor = 1
+                            for cu_duration in cu_duration_var:
 
-                            # Create and agent layout
-                            agent_config = construct_agent_config(
-                                num_sub_agents=num_sub_agents,
-                                num_exec_instances_per_sub_agent=num_exec_instances_per_sub_agent,
-                                target=resource_config[backend]['TARGET'],
-                                network_interface=resource_config[backend].get('NETWORK_INTERFACE'),
-                                clone_factor=clone_factor,
-                                micro=micro
-                            )
+                                # Pilot Desc takes cores, so we translate from nodes here
+                                pilot_cores = int(resource_config[backend]['PPN']) * pilot_nodes
 
-                            # Fire!!
-                            sid, meta = run_experiment(
-                                backend=backend,
-                                barriers=barriers,
-                                gen_bar_wait=gen_bar_wait,
-                                pilot_cores=pilot_cores,
-                                pilot_runtime=pilot_runtime,
-                                cu_runtime=cu_duration,
-                                cancel_on_all_started=cancel_on_all_started,
-                                cu_cores=cu_cores,
-                                cu_count=this_cu_count,
-                                generations=generations,
-                                cu_mpi=cu_mpi,
-                                profiling=profiling,
-                                agent_config=agent_config,
-                                metadata={
-                                    'label': label,
-                                    'repetitions': repetitions,
-                                    'iteration': iter,
-                                    'exclusive_agent_nodes': exclusive_agent_nodes,
-                                    'num_sub_agents': num_sub_agents,
-                                    'num_exec_instances_per_sub_agent': num_exec_instances_per_sub_agent,
-                                    'effective_cores': effective_cores,
-                                    'clone_factor': clone_factor,
-                                    'target': resource_config[backend]['TARGET'],
-                                    'micro': micro
-                                }
-                            )
+                                # Number of cores available for CUs
+                                effective_cores = int(resource_config[backend]['PPN']) * nodes
 
-                            # Append session id to return value
-                            sessions[sid] = meta
+                                # Don't need full node experiments for low number of nodes,
+                                # as we have no equivalent in single core experiments
+                                if skip_few_nodes and nodes < cu_cores:
+                                    continue
 
-                            # Record session id to file
-                            f.write('%s - %s - %s\n' % (sid, time.ctime(), str(meta)))
-                            f.flush()
+
+                                # Check if fixed cu_count was specified
+                                # Note: make a copy because of the loop
+                                if cu_count:
+                                    this_cu_count = cu_count
+                                else:
+                                    # keep core consumption equal
+                                    this_cu_count = effective_cores / cu_cores
+
+                                if cu_duration == 'GUESSTIMATE':
+                                    cus_per_gen = effective_cores / cu_cores
+                                    cu_duration = 60 + cus_per_gen / num_sub_agents
+                                    report.warn("CU_DURATION GUESSTIMATED at %d seconds.\n" % cu_duration)
+                                # Clone
+                                if clone or micro:
+                                    clone_factor = this_cu_count
+                                    this_cu_count = 1
+                                else:
+                                    clone_factor = 1
+
+                                # Create and agent layout
+                                agent_config = construct_agent_config(
+                                    num_sub_agents=num_sub_agents,
+                                    num_exec_instances_per_sub_agent=num_exec_instances_per_sub_agent,
+                                    target=resource_config[backend]['TARGET'],
+                                    network_interface=resource_config[backend].get('NETWORK_INTERFACE'),
+                                    clone_factor=clone_factor,
+                                    micro=micro
+                                )
+
+                                # Fire!!
+                                sid, meta = run_experiment(
+                                    backend=backend,
+                                    barriers=barriers,
+                                    gen_bar_wait=gen_bar_wait,
+                                    pilot_cores=pilot_cores,
+                                    pilot_runtime=pilot_runtime,
+                                    cu_runtime=cu_duration,
+                                    cancel_on_all_started=cancel_on_all_started,
+                                    cu_cores=cu_cores,
+                                    cu_count=this_cu_count,
+                                    generations=generations,
+                                    cu_mpi=cu_mpi,
+                                    profiling=profiling,
+                                    agent_config=agent_config,
+                                    metadata={
+                                        'label': label,
+                                        'repetitions': repetitions,
+                                        'iteration': iter,
+                                        'exclusive_agent_nodes': exclusive_agent_nodes,
+                                        'num_sub_agents': num_sub_agents,
+                                        'num_exec_instances_per_sub_agent': num_exec_instances_per_sub_agent,
+                                        'effective_cores': effective_cores,
+                                        'clone_factor': clone_factor,
+                                        'target': resource_config[backend]['TARGET'],
+                                        'micro': micro
+                                    }
+                                )
+
+                                # Append session id to return value
+                                sessions[sid] = meta
+
+                                # Record session id to file
+                                f.write('%s - %s - %s\n' % (sid, time.ctime(), str(meta)))
+                                f.flush()
 
     f.close()
     return sessions
@@ -1348,6 +1362,7 @@ def expE(backend):
 #
 #-------------------------------------------------------------------------------
 
+
 #-------------------------------------------------------------------------------
 #
 # Microbenchmark executing with varying sub-agents
@@ -1368,6 +1383,31 @@ def expF(backend):
         exclusive_agent_nodes=False,
         cu_cores_var=[1],
         nodes_var=[512] # The number of nodes to allocate for running CUs
+    )
+    return sessions
+#
+#-------------------------------------------------------------------------------
+
+
+#-------------------------------------------------------------------------------
+#
+# Microbenchmark executing with varying cu core counts
+#
+def expG(backend):
+
+    sessions = iterate_experiment(
+        pilot_runtime=15,
+        backend=backend,
+        label=inspect.currentframe().f_code.co_name,
+        repetitions=1,
+        generations=1,
+        barriers=[BARRIER_AGENT_LAUNCH],
+        cu_duration_var=[10],
+        cu_count_var=[1,2,4,8,16,32],
+        num_sub_agents_var=[1], # Number of sub-agents to iterate over
+        num_exec_instances_per_sub_agent_var=[4],
+        exclusive_agent_nodes=False,
+        cu_cores_var=[1,2,4,8,16,32],
     )
     return sessions
 #
