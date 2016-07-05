@@ -1401,18 +1401,19 @@ def expF(backend):
 def expG(backend):
 
     sessions = iterate_experiment(
-        pilot_runtime=15,
+        pilot_runtime=30,
         backend=backend,
         label=inspect.currentframe().f_code.co_name,
         repetitions=1,
         generations=1,
         barriers=[BARRIER_AGENT_LAUNCH],
-        cu_duration_var=[10],
-        cu_count_var=[1,2,4,8,16,32],
+        cu_duration_var=[512],
+        #cu_count_var=[1,2,4,8,16,32],
+        cu_count_var=[64,128,256,512,1024,2048,4096],
         num_sub_agents_var=[1], # Number of sub-agents to iterate over
         num_exec_instances_per_sub_agent_var=[4],
         exclusive_agent_nodes=False,
-        cu_cores_var=[1,2,4,8,16,32],
+        cu_cores_var=[1,2,4,8,16,32,64],
     )
     return sessions
 #
