@@ -66,7 +66,8 @@ resource_config = {
         'TASK_LAUNCH_METHOD': 'APRUN',
         'PROJECT': 'gkd',
         'AGENT_SPAWNER': 'POPEN',
-        'QUEUE': 'normal', # Maximum 30 minutes
+        #'QUEUE': 'normal', # Maximum 30 minutes
+        'QUEUE': 'high',
         'PPN': 32
     },
     'BW_CCM': {
@@ -75,8 +76,9 @@ resource_config = {
         # 'TASK_LAUNCH_METHOD': 'SSH',
         #'TASK_LAUNCH_METHOD': 'MPIRUN',
         'AGENT_SPAWNER': 'POPEN',
-        'QUEUE': 'normal',
+        #'QUEUE': 'normal',
         #'QUEUE': 'debug', # Maximum 30 minutes
+        'QUEUE': 'high',
         'PROJECT': 'gkd',
         'PPN': 32,
         # 'PRE_EXEC_PREPEND': [
@@ -94,7 +96,8 @@ resource_config = {
         'TARGET': 'local',
         'AGENT_SPAWNER': 'ORTE',
         'PROJECT': 'gkd',
-        'QUEUE': 'normal',
+        #'QUEUE': 'normal',
+        'QUEUE': 'high',
         'PPN': 32
     },
     'BW_ORTE': {
@@ -105,7 +108,8 @@ resource_config = {
         'TARGET': 'node',
         'AGENT_SPAWNER': 'POPEN',
         'PROJECT': 'gkd',
-        'QUEUE': 'normal', # Maximum 30 minutes
+        # 'QUEUE': 'normal',
+        'QUEUE': 'high',
         'PPN': 32
     },
     'TITAN': {
