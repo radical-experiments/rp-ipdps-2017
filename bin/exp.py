@@ -633,23 +633,24 @@ def iterate_experiment(
 
         for cu_count in cu_count_var:
 
-            for nodes in nodes_var:
+            for cu_cores in cu_cores_var:
 
-                if not nodes:
-                    if not cu_count:
-                        raise Exception("Both cu_count and nodes not specified.")
+                # Allow to specify FULL node, that translates into the PPN
+                if cu_cores == 'FULL':
+                    cu_cores = int(resource_config[backend]['PPN'])
 
-                    if generations != 1:
-                        raise Exception("We dont do generations and derived nodes.")
+                for nodes in nodes_var:
 
-                    nodes = int(math.ceil(float(cu_count) / resource_config[backend]['PPN']))
-                    report.info("Nodes not specified, deriving from cu_count (%d) resulting in %d nodes." % (cu_count, nodes))
+                    if not nodes:
+                        if not cu_count:
+                            raise Exception("Both cu_count and nodes not specified.")
 
-                for cu_cores in cu_cores_var:
+                        # TODO: enable generations?
+                        if generations != 1:
+                            raise Exception("We dont do generations and derived nodes.")
 
-                    # Allow to specify FULL node, that translates into the PPN
-                    if cu_cores == 'FULL':
-                        cu_cores = int(resource_config[backend]['PPN'])
+                        nodes = int(math.ceil(float(cu_count * cu_cores) / resource_config[backend]['PPN']))
+                        report.info("Nodes not specified, deriving from cu_count (%d) * cu_cores (%d) resulting in %d nodes." % (cu_count, cu_cores, nodes))
 
                     for num_sub_agents in num_sub_agents_var:
 
