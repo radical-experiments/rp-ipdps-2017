@@ -646,8 +646,8 @@ def iterate_experiment(
                             raise Exception("Both cu_count and nodes not specified.")
 
                         # TODO: enable generations?
-                        if generations != 1:
-                            raise Exception("We dont do generations and derived nodes.")
+                        # if generations != 1:
+                        #     raise Exception("We dont do generations and derived nodes.")
 
                         nodes = int(math.ceil(float(cu_count * cu_cores) / resource_config[backend]['PPN']))
                         report.info("Nodes not specified, deriving from cu_count (%d) * cu_cores (%d) resulting in %d nodes." % (cu_count, cu_cores, nodes))
