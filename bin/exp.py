@@ -1396,7 +1396,7 @@ def expF(backend):
 
 #-------------------------------------------------------------------------------
 #
-# Microbenchmark executing with varying cu core counts
+# Executing with varying cu core counts for single generation
 #
 def expG(backend):
 
@@ -1418,6 +1418,106 @@ def expG(backend):
     return sessions
 #
 #-------------------------------------------------------------------------------
+
+
+#-------------------------------------------------------------------------------
+#
+# Reliability experiment with long running large job
+#
+def expH(backend):
+
+    sessions = iterate_experiment(
+        pilot_runtime=1470, # 1 Day + 30 min slack
+        backend=backend,
+        label=inspect.currentframe().f_code.co_name,
+        repetitions=1,
+        generations=24,
+        barriers=[BARRIER_AGENT_LAUNCH],
+        cu_duration_var=[3600],
+        num_sub_agents_var=[1], # Number of sub-agents to iterate over
+        num_exec_instances_per_sub_agent_var=[4],
+        exclusive_agent_nodes=False,
+        cu_cores_var=[256],
+        nodes_var=[1024] # The number of nodes to allocate for running CUs
+    )
+    return sessions
+#
+#-------------------------------------------------------------------------------
+
+
+#-------------------------------------------------------------------------------
+#
+# Reliability experiment with multiple consecutive short running large jobs
+#
+def expI(backend):
+
+    sessions = iterate_experiment(
+        pilot_runtime=65, # 1 hour plus a bit
+        backend=backend,
+        label=inspect.currentframe().f_code.co_name,
+        repetitions=24,
+        generations=4,
+        barriers=[BARRIER_AGENT_LAUNCH],
+        cu_duration_var=[900],
+        num_sub_agents_var=[1], # Number of sub-agents to iterate over
+        num_exec_instances_per_sub_agent_var=[4],
+        exclusive_agent_nodes=False,
+        cu_cores_var=[256],
+        nodes_var=[1024] # The number of nodes to allocate for running CUs
+    )
+    return sessions
+#
+#-------------------------------------------------------------------------------
+
+
+#-------------------------------------------------------------------------------
+#
+# Reliability experiment with single long running small job
+#
+def expJ(backend):
+
+    sessions = iterate_experiment(
+        pilot_runtime=2880, # 2 days
+        backend=backend,
+        label=inspect.currentframe().f_code.co_name,
+        repetitions=1,
+        generations=48,
+        barriers=[BARRIER_AGENT_LAUNCH],
+        cu_duration_var=[3600],
+        num_sub_agents_var=[1], # Number of sub-agents to iterate over
+        num_exec_instances_per_sub_agent_var=[4],
+        exclusive_agent_nodes=False,
+        cu_cores_var=[64],
+        nodes_var=[2] # The number of nodes to allocate for running CUs
+    )
+    return sessions
+#
+#-------------------------------------------------------------------------------
+
+
+#-------------------------------------------------------------------------------
+#
+# Executing with varying cu core counts for 4 generations
+#
+def expK(backend):
+
+    sessions = iterate_experiment(
+        pilot_runtime=60,
+        backend=backend,
+        label=inspect.currentframe().f_code.co_name,
+        repetitions=1,
+        generations=4,
+        barriers=[BARRIER_AGENT_LAUNCH],
+        cu_duration_var=[512],
+        # cu_duration_var=[64],
+        # cu_count_var=[1,2,4,8,16,32],
+        cu_count_var=[64,128,256,512,1024,2048,4096],
+        num_sub_agents_var=[1], # Number of sub-agents to iterate over
+        num_exec_instances_per_sub_agent_var=[4],
+        exclusive_agent_nodes=False,
+        cu_cores_var=[1,2,4,8,16,32,64],
+    )
+    return sessions
 
 #------------------------------------------------------------------------------
 #
