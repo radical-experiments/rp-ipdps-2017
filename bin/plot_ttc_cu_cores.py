@@ -64,7 +64,7 @@ def plot(sids, paper=False):
             # For this call assume that there is only one pilot per session
             resources = get_resources(unit_info_df, pilot_info_df, sid)
             assert len(resources) == 1
-            resource_label = resources.values()[0]
+            resource_label = resources.values()[0].replace('_', '\_')
         else:
             resource_label = 'bogus'
 
@@ -80,8 +80,12 @@ def plot(sids, paper=False):
         #tufs = tuf.sort('asic_get_u_pend')
         tufs = tuf.sort()
 
-        all_dict[cu_count][cu_cores] = all_dict[cu_count][cu_cores].append(pd.Series((tufs['aec_after_exec'].max() - tufs['asic_get_u_pend'].min() - cu_runtime)))
-        #all_dict[cu_count][cu_cores] = all_dict[cu_count][cu_cores].append(pd.Series((tufs['aec_after_exec'].max() - tufs['asic_get_u_pend'].min())))
+        try:
+            all_dict[cu_count][cu_cores] = all_dict[cu_count][cu_cores].append(pd.Series((tufs['aec_after_exec'].max() - tufs['asic_get_u_pend'].min() - cu_runtime)))
+            #all_dict[cu_count][cu_cores] = all_dict[cu_count][cu_cores].append(pd.Series((tufs['aec_after_exec'].max() - tufs['asic_get_u_pend'].min())))
+        except:
+            print "Plotting failed for session: %s" % sid
+            continue
 
     for key in all_dict:
         # print 'orte_ttc raw:', orte_ttc
@@ -104,17 +108,17 @@ def plot(sids, paper=False):
     print 'labels: %s' % labels
     mp.pyplot.legend(labels, loc='upper left', fontsize=LEGEND_FONTSIZE)
     if not paper:
-        mp.pyplot.title("TTC for a varying number of 'concurrent' CUs.\n"
-            "%d generations of a variable number of 'concurrent' CUs of %d core(s) with a %ss payload on a variable core pilot on %s.\n"
+        mp.pyplot.title("TTC overhead for variable size CU.\n"
+            "%d generations of a variable number of 'concurrent' CUs with variable number of cores with a %ss payload on a variable core pilot on %s.\n"
             "Constant number of %d sub-agent with %d ExecWorker(s) each.\n"
             "RP: %s - RS: %s - RU: %s"
-           % (info['metadata.generations'], info['metadata.cu_cores'], info['metadata.cu_runtime'], resource_label,
+           % (info['metadata.generations'], info['metadata.cu_runtime'], resource_label,
               info['metadata.num_sub_agents'], info['metadata.num_exec_instances_per_sub_agent'],
               info['metadata.radical_stack.rp'], info['metadata.radical_stack.rs'], info['metadata.radical_stack.ru']
               ), fontsize=8)
-    mp.pyplot.xlabel("\# CU Cores", fontsize=LABEL_FONTSIZE)
-    mp.pyplot.ylabel("Time to Completion (s)", fontsize=LABEL_FONTSIZE)
-    #mp.pyplot.ylim(0)
+    mp.pyplot.xlabel("\# CUs", fontsize=LABEL_FONTSIZE)
+    mp.pyplot.ylabel("$TTC_{overhead}$ (s)", fontsize=LABEL_FONTSIZE)
+    mp.pyplot.ylim(0)
     #mp.pyplot.ylim(290, 500)
     #mp.pyplot.ylim(y_ref-10) #ax.get_xaxis().set_ticks([])
     # #ax.get_xaxis.set
@@ -124,21 +128,18 @@ def plot(sids, paper=False):
     # plt.setp(ax.xaxis.get_ticklines(), 'markeredgewidth', BORDERWIDTH)
 
     #width = 3.487
-    width = 3.3
-    height = width / 1.618
+    #width = 3.3
+    #height = width / 1.618
     # height = 2.7
-    fig = mp.pyplot.gcf()
-    fig.set_size_inches(width, height)
+    #fig = mp.pyplot.gcf()
+    #fig.set_size_inches(width, height)
     #fig.subplots_adjust(left=0, right=1, top=1, bottom=1)
 
     #fig.tight_layout(w_pad=0.0, h_pad=0.0, pad=0.1)
-    fig.tight_layout(pad=0.1)
+    #fig.tight_layout(pad=0.1)
     #fig.tight_layout()
 
-    if paper:
-        mp.pyplot.savefig('plot_ttc_cores_resources.pdf')
-    else:
-        mp.pyplot.savefig('plot_ttc_cores_many.pdf')
+    mp.pyplot.savefig('plot_ttc_cu_cores.pdf')
 
     mp.pyplot.close()
 
@@ -207,8 +208,67 @@ if __name__ == '__main__':
         'rp.session.radical.marksant.016987.0010',
         'rp.session.radical.marksant.016987.0011',
         'rp.session.radical.marksant.016987.0012',
+        'rp.session.radical.marksant.016987.0013',
+        'rp.session.radical.marksant.016987.0014',
+        'rp.session.radical.marksant.016987.0015',
+        'rp.session.radical.marksant.016987.0017',
+        # 'rp.session.radical.marksant.016987.0018',
+        'rp.session.radical.marksant.016987.0019',
+        'rp.session.radical.marksant.016987.0020',
+        'rp.session.radical.marksant.016987.0021',
+        # 'rp.session.radical.marksant.016987.0022',
+        'rp.session.radical.marksant.016987.0023',
+        'rp.session.radical.marksant.016987.0024',
+        'rp.session.radical.marksant.016987.0025',
+        'rp.session.radical.marksant.016987.0026',
+        'rp.session.radical.marksant.016987.0027',
+        'rp.session.radical.marksant.016987.0028',
+        'rp.session.radical.marksant.016987.0029',
+        'rp.session.radical.marksant.016987.0030',
+        'rp.session.radical.marksant.016987.0031',
+        'rp.session.radical.marksant.016987.0032',
+        'rp.session.radical.marksant.016987.0033',
+        'rp.session.radical.marksant.016987.0034',
+        'rp.session.radical.marksant.016987.0035',
+        'rp.session.radical.marksant.016987.0036',
+        'rp.session.radical.marksant.016987.0037',
+        'rp.session.radical.marksant.016987.0038',
+        'rp.session.radical.marksant.016987.0039',
+        'rp.session.radical.marksant.016988.0000',
+        'rp.session.radical.marksant.016988.0001',
+        'rp.session.radical.marksant.016988.0002',
+        'rp.session.radical.marksant.016988.0003',
+        'rp.session.radical.marksant.016988.0004',
+        'rp.session.radical.marksant.016989.0028',
+        'rp.session.radical.marksant.016993.0003',
+        'rp.session.radical.marksant.016993.0004',
+        'rp.session.radical.marksant.016993.0007',
+        'rp.session.radical.marksant.016993.0017',
+        'rp.session.radical.marksant.016993.0029',
+        'rp.session.radical.marksant.016993.0032',
+        'rp.session.radical.marksant.016993.0034',
+        'rp.session.radical.marksant.016993.0037',
+        'rp.session.radical.marksant.016993.0051',
+        'rp.session.radical.marksant.016994.0000',
+        'rp.session.radical.marksant.016994.0006',
+        'rp.session.radical.marksant.016996.0000',
+        'rp.session.radical.marksant.016996.0001',
+        'rp.session.radical.marksant.016996.0004',
+        'rp.session.radical.marksant.016996.0006',
+        'rp.session.radical.marksant.016996.0007',
+        'rp.session.radical.marksant.016996.0008',
+        'rp.session.radical.marksant.016996.0010',
+        'rp.session.radical.marksant.016996.0011',
+        'rp.session.radical.marksant.016996.0012',
+        'rp.session.radical.marksant.016996.0013',
+        'rp.session.radical.marksant.016996.0015',
+        'rp.session.radical.marksant.016996.0016',
+        'rp.session.radical.marksant.016996.0019',
+        'rp.session.radical.marksant.016996.0021',
+        'rp.session.radical.marksant.016997.0001',
+        'rp.session.radical.marksant.016997.0002',
 
 
     ]
 
-    plot(session_ids, paper=True)
+    plot(session_ids, paper=False)

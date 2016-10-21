@@ -112,7 +112,7 @@ def plot(sids, paper=False):
             "%d generations of a variable number of 'concurrent' CUs of %d core(s) with a %ss payload on a variable core pilot on %s.\n"
             "Constant number of %d sub-agent with %d ExecWorker(s) each.\n"
             "RP: %s - RS: %s - RU: %s"
-           % (info['metadata.generations'], info['metadata.cu_cores'], info['metadata.cu_runtime'], resource_label,
+           % (info['metadata.generations'], info['metadata.cu_cores'], info['metadata.cu_runtime'], resource_label.replace('_', '\_'),
               info['metadata.num_sub_agents'], info['metadata.num_exec_instances_per_sub_agent'],
               info['metadata.radical_stack.rp'], info['metadata.radical_stack.rs'], info['metadata.radical_stack.ru']
               ), fontsize=8)
@@ -136,8 +136,8 @@ def plot(sids, paper=False):
     #fig.subplots_adjust(left=0, right=1, top=1, bottom=1)
 
     #fig.tight_layout(w_pad=0.0, h_pad=0.0, pad=0.1)
-    fig.tight_layout(pad=0.1)
-    #fig.tight_layout()
+    # fig.tight_layout(pad=0.1)
+    # fig.tight_layout()
 
     mp.pyplot.savefig('plot_ttc_cu_cores-norm.pdf')
 
@@ -235,6 +235,11 @@ if __name__ == '__main__':
         'rp.session.radical.marksant.016987.0038',
         'rp.session.radical.marksant.016987.0039',
         'rp.session.radical.marksant.016988.0000',
+        'rp.session.radical.marksant.016988.0001',
+        'rp.session.radical.marksant.016988.0002',
+        'rp.session.radical.marksant.016988.0003',
+        'rp.session.radical.marksant.016988.0004',
+        'rp.session.radical.marksant.016989.0028',
 
 
     ]
